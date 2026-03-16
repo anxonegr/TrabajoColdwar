@@ -1,4 +1,5 @@
 package trabajoColdwar;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class TrabajoColdwar {
@@ -10,28 +11,32 @@ public class TrabajoColdwar {
 		boolean salir = false;
 		
 		do {
-			
-			opcion = menu(sc);
-			
-			switch(opcion){
-	        case 1: jugar();
-	        break;
-
-	        case 2: reglas();
-	        break;
-
-	        case 3: informacion();
-	        break;
-
-	        case 4: extra();
-	        break;
-
-	        case 0: salir = true;
-	        break;
-	        
-	        default:
-	        	System.out.println("Opción inválida.");
-	    }
+			try {
+				opcion = menu(sc);
+				
+				switch(opcion){
+		        case 1: jugar();
+		        break;
+	
+		        case 2: reglas();
+		        break;
+	
+		        case 3: informacion();
+		        break;
+	
+		        case 4: extra();
+		        break;
+	
+		        case 0: salir = true;
+		        break;
+		        
+		        default:
+		        	System.out.println("Opción inválida.");
+				}
+			} catch (InputMismatchException ime) {
+				System.out.println("Opción inválida.");
+				sc.next();
+			}
 		
 		}while (!salir);
 		sc.close();
@@ -56,6 +61,10 @@ public class TrabajoColdwar {
 		
 	}
 	
+	public static void jugar() {
+		
+	}
+	
 	//Imprime las reglas del juego
 	public static void reglas() {
 		
@@ -74,6 +83,10 @@ public class TrabajoColdwar {
         System.out.println("Versión: 1.0");
         System.out.println("Autores: ");
         System.out.println("Contacto: ");
+		
+	}
+	
+	public static void extra() {
 		
 	}
 }
