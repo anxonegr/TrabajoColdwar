@@ -62,6 +62,55 @@ public class TrabajoColdwar {
 	}
 	
 	public static void jugar() {
+
+		int ronda = 1;
+		boolean juegoActivo = true;
+
+		while (juegoActivo) {
+
+		    System.out.println("RONDA " + ronda);
+
+		    // Turno de cada planeta
+		    for (int i = 0; i < planeta.length; i++) {
+		        planeta[i].combate(planeta); 
+		    }
+
+		    // Contar vivos
+		    int vivos = 0;
+
+		    for (int i = 0; i < planeta.length; i++) {
+		        if (planeta[i].getVidas() > 0) {
+		            vivos++;
+		        }
+		    }
+
+		    // Comprobar fin del juego
+		    if (vivos <= 1) {
+		        juegoActivo = false;
+		    }
+
+		    ronda++;
+		}
+
+		// Al salir del bucle decidir ganador o empate
+		int vivos = 0;
+		planeta ganador = null;
+
+		for (int i = 0; i < planeta.length; i++) {
+		    if (planeta[i].getVidas() > 0) {
+		        vivos++;
+		        ganador = planeta[i];
+		    }
+		}
+
+		if (vivos == 1) {
+		    System.out.println("El ganador es: " + ganador.getNombre());
+		} else if (vivos == 0) {
+		    System.out.println("Empate: todos los planetas han sido destruidos");
+		}
+		
+	}
+}
 		
 	}
 	
