@@ -76,21 +76,33 @@ public class TrabajoColdwar {
 		    }
 
 		    // Contar vivos
-		    int vivos = 0;
+		    int vivos = resumenRonda(planeta, ronda);
 
-		    for (int i = 0; i < planeta.length; i++) {
-		        if (planeta[i].getVidas() > 0) {
-		            vivos++;
-		        }
-		    }
-
-		    // Comprobar fin del juego
-		    if (vivos <= 1) {
-		        juegoActivo = false;
-		    }
+			if (vivos <= 1) {
+ 			   juegoActivo = false;
+			}
 
 		    ronda++;
 		}
+
+		public static int resumenRonda(planeta[] planetas, int ronda) {
+    int vivos = 0;
+
+    System.out.println("\n--- RESUMEN RONDA " + ronda + " ---");
+
+    for (int i = 0; i < planetas.length; i++) {
+        System.out.println(planetas[i].getNombre() + " -> Vidas: " + planetas[i].getVidas());
+
+        if (planetas[i].getVidas() > 0) {
+            vivos++;
+        }
+    }
+
+    System.out.println("Equipos vivos: " + vivos);
+    System.out.println("-----------------------------");
+
+    return vivos;
+}
 
 		// Al salir del bucle decidir ganador o empate
 		int vivos = 0;
