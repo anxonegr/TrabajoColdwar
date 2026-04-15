@@ -1,5 +1,9 @@
 package trabajoColdwar;
 
+import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -40,6 +44,7 @@ public class TrabajoColdwar {
                 case 2: reglas();         break;
                 case 3: informacion();    break;
                 case 4: jugar(sc, true);  break;
+                case 5: mostrarGanadores(); break; //añadimos una opción para ver los ganadores 
                 case 0: salir = true;     break;
                 default: System.out.println("  [!] Opcion invalida. Intentelo de nuevo.");
             }
@@ -84,7 +89,7 @@ public class TrabajoColdwar {
     public static int menu(Scanner sc) {
         System.out.println();
         System.out.println("  ╔══════════════════════════╗");
-        System.out.println("  ║      ☢   COLDWAR   ☢     ║");
+        System.out.println("  ║      ☢   COLDWAR   ☢    ║");
         System.out.println("  ╠══════════════════════════╣");
         System.out.println("  ║  1.  Jugar               ║");
         System.out.println("  ║  2.  Reglas              ║");
