@@ -1,9 +1,11 @@
 package trabajoColdwar;
 
-import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
@@ -23,6 +25,9 @@ import java.util.Scanner;
  */
 public class TrabajoColdwar {
 
+    /** Nombre del fichero donde se persiste el historial de ganadores. */
+    private static final String FICHERO_GANADORES = "ganadores.txt";
+
     // ─────────────────────────────────────────────
     //  Punto de entrada
     // ─────────────────────────────────────────────
@@ -40,12 +45,12 @@ public class TrabajoColdwar {
         do {
             int opcion = menu(sc);
             switch (opcion) {
-                case 1: jugar(sc, false); break;
-                case 2: reglas();         break;
-                case 3: informacion();    break;
-                case 4: jugar(sc, true);  break;
-                case 5: mostrarGanadores(); break; //añadimos una opción para ver los ganadores 
-                case 0: salir = true;     break;
+                case 1: jugar(sc, false);    break;
+                case 2: reglas();            break;
+                case 3: informacion();       break;
+                case 4: jugar(sc, true);     break;
+                case 5: mostrarGanadores();  break;
+                case 0: salir = true;        break;
                 default: System.out.println("  [!] Opcion invalida. Intentelo de nuevo.");
             }
         } while (!salir);
@@ -89,12 +94,13 @@ public class TrabajoColdwar {
     public static int menu(Scanner sc) {
         System.out.println();
         System.out.println("  ╔══════════════════════════╗");
-        System.out.println("  ║      ☢   COLDWAR   ☢    ║");
+        System.out.println("  ║      ☢   COLDWAR   ☢     ║");
         System.out.println("  ╠══════════════════════════╣");
         System.out.println("  ║  1.  Jugar               ║");
         System.out.println("  ║  2.  Reglas              ║");
         System.out.println("  ║  3.  Informacion         ║");
         System.out.println("  ║  4.  Apartado extra      ║");
+        System.out.println("  ║  5.  Historial ganadores ║");
         System.out.println("  ║  0.  Salir               ║");
         System.out.println("  ╚══════════════════════════╝");
         System.out.print("  Seleccione una opcion: ");
@@ -122,14 +128,14 @@ public class TrabajoColdwar {
         System.out.println("    5. Gigante gaseoso (400 vidas, empieza con 10 misiles +10/ronda)");
         System.out.println("    6. Planeta enano   (100 vidas, 50% de esquive)");
 
-        String tipo  = "";
+        String tipo   = "";
         boolean valido = false;
 
         while (!valido) {
             System.out.print("  Tipo: ");
             int eleccion = leerNumero(sc);
 
-            if (eleccion == 1) { tipo = "normal";  valido = true; }
+            if      (eleccion == 1) { tipo = "normal";  valido = true; }
             else if (eleccion == 2) { tipo = "rojo";    valido = true; }
             else if (eleccion == 3) { tipo = "azul";    valido = true; }
             else if (eleccion == 4) { tipo = "verde";   valido = true; }
@@ -144,6 +150,77 @@ public class TrabajoColdwar {
     }
 
     // ─────────────────────────────────────────────
+    //  Historial de ganadores
+    // ─────────────────────────────────────────────
+
+    /**
+     * Guarda el nombre del ganador de una partida al final del fichero
+     * {@value #FICHERO_GANADORES}, creándolo si no existe.
+     * <p>
+     * Solo debe llamarse cuando haya exactamente un ganador; en caso de empate
+     * no se invoca este método y no se escribe nada.
+     * </p>
+     *
+     * @param nombreGanador nombre del planeta ganador
+     */
+    public static void guardarGanador(String nombreGanador) {
+        // Guardamos el fichero en el mismo directorio desde el que se ejecuta el programa
+        File fichero = new File(FICHERO_GANADORES);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero, true))) {
+            bw.write(nombreGanador);
+            bw.newLine();
+        } catch (IOException e) {
+            System.out.println("  [!] No se pudo guardar el ganador: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Lee el fichero {@value #FICHERO_GANADORES} y muestra por pantalla
+     * el historial completo de ganadores de todas las partidas disputadas.
+     * <p>
+     * Si el fichero no existe o está vacío, informa al usuario en consecuencia.
+     * Los empates nunca se guardan, por lo que solo aparecen nombres de ganadores reales.
+     * </p>
+     */
+    public static void mostrarGanadores() {
+        File fichero = new File(FICHERO_GANADORES);
+
+        System.out.println();
+        System.out.println("  ╔══════════════════════════════════════════╗");
+        System.out.println("  ║         HISTORIAL DE GANADORES          ║");
+        System.out.println("  ╠══════════════════════════════════════════╣");
+
+        if (!fichero.exists()) {
+            System.out.println("  ║  Aun no hay partidas registradas.       ║");
+            System.out.println("  ╚══════════════════════════════════════════╝");
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
+            String linea;
+            int partida = 1;
+            boolean hayRegistros = false;
+
+            while ((linea = br.readLine()) != null) {
+                if (!linea.isBlank()) {
+                		System.out.println("  ║  Partida " + partida + ": " + linea);
+                    partida++;
+                    hayRegistros = true;
+                }
+            }
+
+            if (!hayRegistros) {
+                System.out.println("  ║  Aun no hay partidas registradas.       ║");
+            }
+
+        } catch (IOException e) {
+            System.out.println("  ║  Error al leer el historial: " + e.getMessage());
+        }
+
+        System.out.println("  ╚══════════════════════════════════════════╝");
+    }
+
+    // ─────────────────────────────────────────────
     //  Lógica del juego
     // ─────────────────────────────────────────────
 
@@ -152,6 +229,8 @@ public class TrabajoColdwar {
      * <p>
      * Solicita el número de equipos, sus nombres y sus tipos de planeta.
      * Ejecuta las rondas en bucle y, al terminar, anuncia al ganador o declara empate.
+     * Si hay un único ganador, su nombre se persiste en {@value #FICHERO_GANADORES}.
+     * En caso de empate no se guarda ningún registro.
      * </p>
      * <p>
      * Si {@code conBonus} es {@code true} (apartado extra), al inicio de cada
@@ -187,8 +266,8 @@ public class TrabajoColdwar {
                     + planetas[i].getMisilesRonda() + " misiles iniciales.");
         }
 
-        Random  random     = new Random();
-        int     ronda      = 1;
+        Random  random      = new Random();
+        int     ronda       = 1;
         boolean juegoActivo = true;
 
         while (juegoActivo) {
@@ -241,8 +320,12 @@ public class TrabajoColdwar {
         System.out.println("  ╔══════════════════════════════╗");
         if (vivosFinal == 1) {
             System.out.println("  ║  GANADOR: " + ganador.getNombre() + "           ║");
+            // Persistir el ganador; en empate (vivosFinal == 0) no se guarda nada
+            guardarGanador(ganador.getNombre());
+            System.out.println("  ║  (resultado guardado)        ║");
         } else {
             System.out.println("  ║  EMPATE: todos destruidos    ║");
+            System.out.println("  ║  (el empate no se registra)  ║");
         }
         System.out.println("  ╚══════════════════════════════╝");
     }
