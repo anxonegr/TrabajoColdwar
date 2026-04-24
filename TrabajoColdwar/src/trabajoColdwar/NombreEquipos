@@ -1,20 +1,557 @@
-package trabajoProgramacion;
+package trabajoColdWar;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.Random;
 import java.util.Scanner;
 
-public class TrabajoProgramacion {
+/**
+ * Clase principal del juego <b>ColdWar</b>.
+ * <p>
+ * Gestiona el menú principal, el flujo de la partida y la lógica de cada ronda.
+ * Los equipos (planetas) se turnan para atacarse o curarse hasta que solo
+ * queda uno en pie o todos son destruidos al mismo tiempo.
+ * </p>
+ *
+ * <b>Apartado extra:</b> ejecuta el juego base añadiendo un bonus aleatorio
+ * de 15 misiles a un equipo vivo al inicio de cada ronda par.
+ *
+ * @version 2.0
+ */
+public class TrabajoColdWar {
 
-	public static void main(String[] args) {
-		Scanner e = new Scanner (System.in);
-		String equipo[] = new String [5];
+    /** Nombre del fichero donde se persiste el historial de ganadores. */
+    private static final String FICHERO_GANADORES = "ganadores.txt";
 
-		
-		for (int i = 0; i < 5 ; i++) {
-			System.out.println("Introduce el equipo "+(i+1));
-			equipo[i+1]= e.nextLine();
-		
-		}
-		
+    // ─────────────────────────────────────────────
+    //  Punto de entrada
+    // ─────────────────────────────────────────────
 
-	}
+    /**
+     * Punto de entrada del programa.
+     * Muestra el menú principal en bucle hasta que el usuario elige salir.
+     *
+     * @param args argumentos de línea de comandos (no utilizados)
+     */
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        boolean salir = false;
 
+        do {
+            int opcion = menu(sc);
+            switch (opcion) {
+                case 1: jugar(sc, false);    break;
+                case 2: reglas();            break;
+                case 3: informacion();       break;
+                case 4: jugar(sc, true);     break;
+                case 5: mostrarGanadores();  break;
+                case 0: salir = true;        break;
+                default: System.out.println("  [!] Opcion invalida. Intentelo de nuevo.");
+            }
+        } while (!salir);
+
+        sc.close();
+        System.out.println("\n  Hasta la proxima, comandante!\n");
+    }
+
+    // ─────────────────────────────────────────────
+    //  Utilidades de entrada
+    // ─────────────────────────────────────────────
+
+    /**
+     * Lee un número entero desde la consola, descartando cualquier entrada
+     * no numérica para evitar que el programa lance una excepción.
+     *
+     * @param sc el {@link Scanner} de entrada
+     * @return el número entero válido introducido por el usuario
+     */
+    public static int leerNumero(Scanner sc) {
+        while (true) {
+            try {
+                return sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.print("  Entrada no valida. Introduce un numero: ");
+                sc.next();
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────
+    //  Menú principal
+    // ─────────────────────────────────────────────
+
+    /**
+     * Imprime el menú principal y devuelve la opción elegida por el usuario.
+     *
+     * @param sc el {@link Scanner} de entrada
+     * @return número de opción seleccionada
+     */
+    public static int menu(Scanner sc) {
+        System.out.println();
+        System.out.println("  ╔══════════════════════════╗");
+        System.out.println("  ║      ☢   COLDWAR   ☢    ║");
+        System.out.println("  ╠══════════════════════════╣");
+        System.out.println("  ║  1.  Jugar               ║");
+        System.out.println("  ║  2.  Reglas              ║");
+        System.out.println("  ║  3.  Informacion         ║");
+        System.out.println("  ║  4.  Apartado extra      ║");
+        System.out.println("  ║  5.  Historial ganadores ║");
+        System.out.println("  ║  0.  Salir               ║");
+        System.out.println("  ╚══════════════════════════╝");
+        System.out.print("  Seleccione una opcion: ");
+        return leerNumero(sc);
+    }
+
+    // ─────────────────────────────────────────────
+    //  Selección de tipo de planeta
+    // ─────────────────────────────────────────────
+
+    /**
+     * Muestra el menú de tipos de planeta y devuelve el tipo elegido como String.
+     * Repite la pregunta si la opción no es válida.
+     *
+     * @param sc el {@link Scanner} de entrada
+     * @return tipo de planeta en minúsculas ("normal", "rojo", "azul", "verde",
+     *         "gaseoso" o "enano")
+     */
+    public static String seleccionarTipo(Scanner sc) {
+        System.out.println("  Elige el tipo de planeta:");
+        System.out.println("    1. Normal          (200 vidas, 50 misiles/ronda)");
+        System.out.println("    2. Rojo            (x2 al verde, /2 al azul)");
+        System.out.println("    3. Azul            (x2 al rojo,  /2 al verde)");
+        System.out.println("    4. Verde           (x2 al azul,  /2 al rojo)");
+        System.out.println("    5. Gigante gaseoso (400 vidas, empieza con 10 misiles +10/ronda)");
+        System.out.println("    6. Planeta enano   (100 vidas, 50% de esquive)");
+
+        String tipo   = "";
+        boolean valido = false;
+
+        while (!valido) {
+            System.out.print("  Tipo: ");
+            int eleccion = leerNumero(sc);
+
+            if      (eleccion == 1) { tipo = "normal";  valido = true; }
+            else if (eleccion == 2) { tipo = "rojo";    valido = true; }
+            else if (eleccion == 3) { tipo = "azul";    valido = true; }
+            else if (eleccion == 4) { tipo = "verde";   valido = true; }
+            else if (eleccion == 5) { tipo = "gaseoso"; valido = true; }
+            else if (eleccion == 6) { tipo = "enano";   valido = true; }
+            else {
+                System.out.println("  [!] Opcion no valida. Elige un numero entre 1 y 6.");
+            }
+        }
+
+        return tipo;
+    }
+
+    // ─────────────────────────────────────────────
+    //  Historial de ganadores
+    // ─────────────────────────────────────────────
+
+    /**
+     * Guarda el nombre del ganador de una partida al final del fichero
+     * {@value #FICHERO_GANADORES}, creándolo si no existe.
+     * <p>
+     * Solo debe llamarse cuando haya exactamente un ganador; en caso de empate
+     * no se invoca este método y no se escribe nada.
+     * </p>
+     *
+     * @param nombreGanador nombre del planeta ganador
+     */
+    public static void guardarGanador(String nombreGanador) {
+        // Guardamos el fichero en el mismo directorio desde el que se ejecuta el programa
+        File fichero = new File(FICHERO_GANADORES);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero, true))) {
+            bw.write(nombreGanador);
+            bw.newLine();
+        } catch (IOException e) {
+            System.out.println("  [!] No se pudo guardar el ganador: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Lee el fichero {@value #FICHERO_GANADORES} y muestra por pantalla
+     * el historial completo de ganadores de todas las partidas disputadas.
+     * <p>
+     * Si el fichero no existe o está vacío, informa al usuario en consecuencia.
+     * Los empates nunca se guardan, por lo que solo aparecen nombres de ganadores reales.
+     * </p>
+     */
+    public static void mostrarGanadores() {
+        File fichero = new File(FICHERO_GANADORES);
+
+        System.out.println();
+        System.out.println("  ╔══════════════════════════════════════════╗");
+        System.out.println("  ║         HISTORIAL DE GANADORES          ║");
+        System.out.println("  ╠══════════════════════════════════════════╣");
+
+        if (!fichero.exists()) {
+            System.out.println("  ║  Aun no hay partidas registradas.       ║");
+            System.out.println("  ╚══════════════════════════════════════════╝");
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
+            String linea ="";
+            int partida = 1;
+            boolean hayRegistros = false;
+
+            while ((linea = br.readLine()) != null) {
+                if (!linea.isBlank()) {
+                		System.out.println("  ║  Partida " + partida + ": " + linea);
+                    partida++;
+                    hayRegistros = true;
+                }
+            }
+
+            if (!hayRegistros) {
+                System.out.println("  ║  Aun no hay partidas registradas.       ║");
+            }
+
+        } catch (IOException e) {
+            System.out.println("  ║  Error al leer el historial: " + e.getMessage());
+        }
+
+        System.out.println("  ╚══════════════════════════════════════════╝");
+    }
+
+    // ─────────────────────────────────────────────
+    //  Lógica del juego
+    // ─────────────────────────────────────────────
+
+    /**
+     * Gestiona el flujo completo de una partida.
+     * <p>
+     * Solicita el número de equipos, sus nombres y sus tipos de planeta.
+     * Ejecuta las rondas en bucle y, al terminar, anuncia al ganador o declara empate.
+     * Si hay un único ganador, su nombre se persiste en {@value #FICHERO_GANADORES}.
+     * En caso de empate no se guarda ningún registro.
+     * </p>
+     * <p>
+     * Si {@code conBonus} es {@code true} (apartado extra), al inicio de cada
+     * ronda par se otorgan 15 misiles extra a un equipo vivo elegido al azar.
+     * </p>
+     *
+     * @param sc       el {@link Scanner} de entrada
+     * @param conBonus {@code true} para activar el bonus aleatorio de misiles
+     */
+    public static void jugar(Scanner sc, boolean conBonus) {
+
+        if (conBonus) {
+            System.out.println("\n  [APARTADO EXTRA] Modo con bonus aleatorio de misiles activado.");
+        }
+
+        // Número de equipos (mínimo 2)
+        System.out.print("\n  Cuantos equipos van a jugar? (minimo 3): ");
+        int numPlanetas = leerNumero(sc);
+        while (numPlanetas < 3) {
+            System.out.print("  Debe haber al menos 3 equipos. Introduce otro numero: ");
+            numPlanetas = leerNumero(sc);
+        }
+
+        // Creación de planetas
+        ArrayList<Planeta> planetas = new ArrayList<>();
+        
+//        Recorre los planetas ya creados
+        for (int i = 0; i < numPlanetas; i++) {
+            String nombre="";
+            boolean repetido = false;
+
+            do {
+//            	Introduce nombre del equipo
+            	repetido = false;
+                System.out.print("  Nombre del equipo " + (i + 1) + ": ");
+                nombre = sc.next();
+
+                // Comprobar si ya existe
+                for (Planeta p: planetas) {
+                    if (p.getNombre().equalsIgnoreCase(nombre)) {
+                        repetido = true;
+                        System.out.println("Ese nombre ya está en uso, prueba otro.");
+                        break;
+                    }
+                }
+
+            } while (repetido);
+            
+            String tipo   = seleccionarTipo(sc);
+           Planeta nuevo = new Planeta (nombre,tipo);
+           planetas.add(nuevo);
+            System.out.println("  -> " + nombre + " creado como " + nuevo.getNombreTipo()
+                    + " con " + nuevo.getNombreTipo() + " vidas y "
+                    +nuevo.getMisilesRonda() + " misiles iniciales.");
+        }
+
+        Random  random  = new Random();
+        int     ronda       = 1;
+        boolean juegoActivo = true;
+
+        while (juegoActivo) {
+
+            System.out.println("\n  ╔══════════════════════════════╗");
+            System.out.println("  ║         RONDA  " + ronda + "              ║");
+            System.out.println("  ╚══════════════════════════════╝");
+
+            // Reposición de misiles al inicio de la ronda
+            for (Planeta p : planetas) {
+                p.reponerMisiles(ronda);
+            }
+
+            // Bonus aleatorio cada 2 rondas (solo modo extra)
+            if (conBonus && ronda % 2 == 0) {
+                int idx = random.nextInt(planetas.size());
+                Planeta p = planetas.get(idx);
+                
+                if (p.getVidas() > 0) {
+                    p.setMisilesRonda(p.getMisilesRonda() + 15);
+                    System.out.println("\n  BONUS: el equipo '" + p.getNombre()
+                            + "' recibe 15 misiles extra.");
+                }
+            }
+
+            // Turno de cada planeta que siga vivo
+            for (Planeta p : planetas) {
+                if (p.getVidas() > 0) {
+                    jugarTurno(p, planetas, sc);
+                }
+            }
+
+            // Resumen al final de la ronda
+            int vivos = resumenRonda(planetas, ronda);
+            if (vivos <= 1) {
+                juegoActivo = false;
+            }
+            ronda++;
+        }
+
+        // Determinar ganador o empate
+        Planeta ganador = null;
+        int vivosFinal = 0;
+        
+        for (Planeta p : planetas) {
+            if (p.getVidas() > 0) {
+                vivosFinal++;
+                ganador = p;
+            }
+        }
+
+        System.out.println();
+        System.out.println("  ╔══════════════════════════════╗");
+        if (vivosFinal == 1) {
+            System.out.println("  ║  GANADOR: " + ganador.getNombre() + "           ║");
+            // Persistir el ganador; en empate (vivosFinal == 0) no se guarda nada
+            guardarGanador(ganador.getNombre());
+            System.out.println("  ║  (resultado guardado)        ║");
+        } else {
+            System.out.println("  ║  EMPATE: todos destruidos    ║");
+            System.out.println("  ║  (el empate no se registra)  ║");
+        }
+        System.out.println("  ╚══════════════════════════════╝");
+    }
+
+    /**
+     * Gestiona el turno completo de un planeta atacante.
+     * <p>
+     * El bucle continúa mientras el atacante tenga misiles disponibles.
+     * En cada iteración el jugador elige:
+     * </p>
+     * <ul>
+     *   <li>Un planeta enemigo al que atacar y cuántos misiles usar.</li>
+     *   <li>La opción {@code 0} para convertir todos los misiles restantes
+     *       en puntos de vida (ratio 1 misil → 0,5 vidas).</li>
+     * </ul>
+     *
+     * @param atacante      el {@link Planeta} que realiza el ataque en este turno
+     * @param listaPlanetas array con todos los planetas de la partida
+     * @param sc            el {@link Scanner} de entrada
+     */
+    static void jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc) {
+
+        while (atacante.getMisilesRonda() > 0) {
+
+            // Cabecera del turno
+            System.out.println("\n  ┌──────────────────────────────────────┐");
+            System.out.println("  │  TURNO: " + atacante.getNombre()
+                    + " (" + atacante.getNombreTipo() + ")");
+            System.out.println("  │  Misiles disponibles: " + atacante.getMisilesRonda());
+            System.out.println("  │  Vidas: " + atacante.getVidas());
+            System.out.println("  └──────────────────────────────────────┘");
+
+            // Mostrar lista de objetivos
+            System.out.println("  A que planeta quieres atacar?");
+            
+            int opc = 1;
+            
+            for (int i = 0; i < listaPlanetas.size(); i++) {
+            	
+            	Planeta p = listaPlanetas.get(i);
+            	
+            	if (p == atacante) {
+            		continue;
+            	}
+            	
+                String estadoStr ="";
+                
+                if (p.getVidas() > 0) {
+                    estadoStr = "(Vidas: " + p.getVidas()
+                            + " | " + p.getNombreTipo() + ")";
+                    
+                } else {
+                    estadoStr = "[ELIMINADO]";
+                }
+                System.out.println("    " + opc + ". " + p.getNombre()
+                        + " " + estadoStr);
+                opc++;
+            }
+            System.out.println("    0. Convertir misiles restantes en defensa");
+
+            int     numObjetivo    = -2;
+            boolean objetivoValido = false;
+
+            while (!objetivoValido) {
+                System.out.print("  Objetivo: ");
+                int eleccion = leerNumero(sc);
+                numObjetivo  = eleccion - 1;
+
+                if (numObjetivo == -1) {
+                    objetivoValido = true;
+
+                } else if (numObjetivo >= 0 && numObjetivo < listaPlanetas.size()) {
+                    if (listaPlanetas.get(numObjetivo).getVidas() <= 0) {
+                        System.out.println("  [!] Ese planeta ya ha sido eliminado. Elige otro.");
+                    } else if (listaPlanetas.get(numObjetivo) == atacante) {
+                        System.out.println("  [!] No puedes atacarte a ti mismo.");
+                    } else {
+                        objetivoValido = true;
+                    }
+                } else {
+                    System.out.println("  [!] Opcion no valida. Introduce un numero"
+                            + " entre 0 y " + listaPlanetas.size() + ".");
+                }
+            }
+
+            // Opción defensa
+            if (numObjetivo == -1) {
+                int curacion = atacante.getMisilesRonda() / 2;
+                atacante.setVidas(atacante.getVidas() + curacion);
+                System.out.println("  [+] Te has curado " + curacion
+                        + " puntos de vida. Vidas totales: " + atacante.getVidas());
+                atacante.setMisilesRonda(0);
+                break;
+            }
+
+            // Leer cantidad de misiles para el ataque
+            int     misilesAtacar  = 0;
+            boolean cantidadValida = false;
+            while (!cantidadValida) {
+                System.out.print("  Cuantos misiles quieres usar? (max "
+                        + atacante.getMisilesRonda() + "): ");
+                misilesAtacar = leerNumero(sc);
+                if (misilesAtacar <= 0) {
+                    System.out.println("  [!] Debes usar al menos 1 misil.");
+                } else if (misilesAtacar > atacante.getMisilesRonda()) {
+                    System.out.println("  [!] No tienes suficientes misiles.");
+                } else {
+                    cantidadValida = true;
+                }
+            }
+
+            // Ejecutar el combate
+            listaPlanetas.get(numObjetivo).combate(misilesAtacar, atacante);
+        }
+
+        System.out.println("  >> " + atacante.getNombre() + " ha agotado sus misiles.");
+    }
+
+    /**
+     * Imprime el resumen de estado al final de una ronda y cuenta los equipos vivos.
+     *
+     * @param planetas array de planetas participantes
+     * @param ronda    número de la ronda recién terminada
+     * @return número de equipos que siguen con vida
+     */
+    public static int resumenRonda(ArrayList<Planeta> planetas, int ronda) {
+        System.out.println("\n  ╔══════════════════════════════════════════╗");
+        System.out.println("  ║      RESUMEN  RONDA  " + ronda + "                   ║");
+        System.out.println("  ╠═══════════════════╦══════╦═══════════════╣");
+        System.out.println("  ║ Equipo            ║ Vida ║ Tipo          ║");
+        System.out.println("  ╠═══════════════════╬══════╬═══════════════╣");
+
+        int vivos = 0;
+        for (Planeta p : planetas) {
+            String estadoStr= "";
+            if (p.getVidas() > 0) {
+                estadoStr = p.getNombreTipo();
+                vivos++;
+            } else {
+                estadoStr = "Eliminado";
+            }
+            System.out.println("  ║ " + p.getNombre()
+                    + "                   ║ " + p.getVidas()
+                    + "   ║ " + estadoStr + "       ║");
+        }
+
+        System.out.println("  ╠═══════════════════╩══════╩═══════════════╣");
+        System.out.println("  ║  Equipos vivos: " + vivos + "                          ║");
+        System.out.println("  ╚══════════════════════════════════════════╝");
+
+        return vivos;
+    }
+
+    // ─────────────────────────────────────────────
+    //  Secciones informativas
+    // ─────────────────────────────────────────────
+
+    /**
+     * Imprime las reglas del juego.
+     */
+    public static void reglas() {
+        System.out.println();
+        System.out.println("  ╔═══════════════════════════════════════════════════╗");
+        System.out.println("  ║               REGLAS DEL JUEGO                   ║");
+        System.out.println("  ╠═══════════════════════════════════════════════════╣");
+        System.out.println("  ║  * Cada equipo empieza con vidas segun su tipo.  ║");
+        System.out.println("  ║  * Se reparten misiles por ronda segun el tipo.  ║");
+        System.out.println("  ║  * Ataca a otros equipos con misiles.            ║");
+        System.out.println("  ║  * Elige 0 para curar (misiles / 2).            ║");
+        System.out.println("  ║  * A 0 vidas, el equipo es eliminado.           ║");
+        System.out.println("  ╠═══════════════════════════════════════════════════╣");
+        System.out.println("  ║               TIPOS DE PLANETA                   ║");
+        System.out.println("  ╠═══════════════════════════════════════════════════╣");
+        System.out.println("  ║  Normal:          200 vidas, 50 misiles/ronda.  ║");
+        System.out.println("  ║  Rojo:            x2 al verde, /2 al azul.      ║");
+        System.out.println("  ║  Azul:            x2 al rojo,  /2 al verde.     ║");
+        System.out.println("  ║  Verde:           x2 al azul,  /2 al rojo.      ║");
+        System.out.println("  ║  Gigante gaseoso: 400 vidas, 10 mis. +10/ronda. ║");
+        System.out.println("  ║  Planeta enano:   100 vidas, 50% de esquive.    ║");
+        System.out.println("  ╠═══════════════════════════════════════════════════╣");
+        System.out.println("  ║  APARTADO EXTRA: bonus aleatorio cada 2 rondas. ║");
+        System.out.println("  ╚═══════════════════════════════════════════════════╝");
+    }
+
+    /**
+     * Imprime información sobre el juego y sus autores.
+     */
+    public static void informacion() {
+        System.out.println();
+        System.out.println("  ╔══════════════════════════════════════════╗");
+        System.out.println("  ║               INFORMACION                ║");
+        System.out.println("  ╠══════════════════════════════════════════╣");
+        System.out.println("  ║  Version : 2.0                           ║");
+        System.out.println("  ║  Autores : Miguel Riveiro                ║");
+        System.out.println("  ║  Autores : Rubén González                ║");
+        System.out.println("  ║  Autores : Anxo Negreira                 ║");
+        System.out.println("  ║  Autores : Xoel Mauri                    ║");
+        System.out.println("  ║  Autores : Bieito Martínez               ║");
+        System.out.println("  ║  Autores : Enrique Martín                ║");
+        System.out.println("  ║  Autores : Lukas Ouro                    ║");
+        System.out.println("  ║  Contacto: xoelmauri@icloud.com          ║");
+        System.out.println("  ╚══════════════════════════════════════════╝");
+    }
 }
