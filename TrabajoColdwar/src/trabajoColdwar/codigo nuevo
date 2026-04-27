@@ -318,7 +318,7 @@ public class TrabajoColdWar {
             // Turno de cada planeta que siga vivo
             for (Planeta p : planetas) {
                 if (p.getVidas() > 0) {
-                    jugarTurno(p, planetas, sc);
+                    jugarTurno(p, planetas, sc,ronda);
                 }
             }
 
@@ -371,7 +371,7 @@ public class TrabajoColdWar {
      * @param listaPlanetas array con todos los planetas de la partida
      * @param sc            el {@link Scanner} de entrada
      */
-    static void jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc) {
+    static void jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc, int ronda) {
 
         while (atacante.getMisilesRonda() > 0) {
 
@@ -386,55 +386,79 @@ public class TrabajoColdWar {
             // Mostrar lista de objetivos
             System.out.println("  A que planeta quieres atacar?");
             
+//         Lista donde se guardan los indices reales
+            ArrayList<Integer> indicesValidos = new ArrayList<>();
+
             int opc = 1;
-            
+
             for (int i = 0; i < listaPlanetas.size(); i++) {
-            	
-            	Planeta p = listaPlanetas.get(i);
-            	
-            	if (p == atacante) {
-            		continue;
-            	}
-            	
-                String estadoStr ="";
-                
+
+                Planeta p = listaPlanetas.get(i);
+
+                if (p == atacante) {
+                    continue;
+                }
+
+             // guardamos el índice real
+                indicesValidos.add(i); 
+
+                String estadoStr;
+
+//			Mostramos de los planetas vivos
                 if (p.getVidas() > 0) {
                     estadoStr = "(Vidas: " + p.getVidas()
                             + " | " + p.getNombreTipo() + ")";
-                    
+//          Si está muerto
                 } else {
                     estadoStr = "[ELIMINADO]";
                 }
+
                 System.out.println("    " + opc + ". " + p.getNombre()
                         + " " + estadoStr);
+
                 opc++;
             }
-            System.out.println("    0. Convertir misiles restantes en defensa");
+            
+//            La defensa se muestra a partir de la ronda 2
+            if (ronda>1) {
+            	System.out.println("    0. Convertir misiles restantes en defensa");
+            
+            }
 
-            int     numObjetivo    = -2;
+            int numObjetivo = -2;
             boolean objetivoValido = false;
 
             while (!objetivoValido) {
+
                 System.out.print("  Objetivo: ");
                 int eleccion = leerNumero(sc);
-                numObjetivo  = eleccion - 1;
 
-                if (numObjetivo == -1) {
+//             Si pulsa 0 en la primera ronda forzamos opcion no valida
+                if (eleccion == 0 && ronda == 1) {
+                
+                	eleccion = -99;
+                }
+//              Opcion de defenderse a partir de la ronda 2
+                if (eleccion == 0) {
+                    numObjetivo = -1;
                     objetivoValido = true;
 
-                } else if (numObjetivo >= 0 && numObjetivo < listaPlanetas.size()) {
-                    if (listaPlanetas.get(numObjetivo).getVidas() <= 0) {
-                        System.out.println("  [!] Ese planeta ya ha sido eliminado. Elige otro.");
-                    } else if (listaPlanetas.get(numObjetivo) == atacante) {
-                        System.out.println("  [!] No puedes atacarte a ti mismo.");
+                } else if (eleccion >= 1 && eleccion <= indicesValidos.size()) {
+
+                    int indiceReal = indicesValidos.get(eleccion - 1);
+
+                    if (listaPlanetas.get(indiceReal).getVidas() <= 0) {
+                        System.out.println("  [!] Ese planeta ya ha sido eliminado.");
                     } else {
+                        numObjetivo = indiceReal;
                         objetivoValido = true;
                     }
+
                 } else {
-                    System.out.println("  [!] Opcion no valida. Introduce un numero"
-                            + " entre 0 y " + listaPlanetas.size() + ".");
+                    System.out.println("  [!] Opcion no valida.");
                 }
             }
+            
 
             // Opción defensa
             if (numObjetivo == -1) {
