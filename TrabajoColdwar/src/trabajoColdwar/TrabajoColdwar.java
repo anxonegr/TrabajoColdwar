@@ -478,6 +478,7 @@ public class TrabajoColdwar {
      * @return número de equipos que siguen con vida
      */
     public static int resumenRonda(ArrayList<Planeta> planetas, int ronda) {
+    	
         System.out.println("\n  ╔══════════════════════════════════════════╗");
         System.out.println("  ║      RESUMEN  RONDA  " + ronda + "                   ║");
         System.out.println("  ╠═══════════════════╦══════╦═══════════════╣");
@@ -540,19 +541,39 @@ public class TrabajoColdwar {
      * Imprime información sobre el juego y sus autores.
      */
     public static void informacion() {
-        System.out.println();
-        System.out.println("  ╔══════════════════════════════════════════╗");
-        System.out.println("  ║               INFORMACION                ║");
-        System.out.println("  ╠══════════════════════════════════════════╣");
-        System.out.println("  ║  Version : 2.0                           ║");
-        System.out.println("  ║  Autores : Miguel Riveiro                ║");
-        System.out.println("  ║  Autores : Rubén González                ║");
-        System.out.println("  ║  Autores : Anxo Negreira                 ║");
-        System.out.println("  ║  Autores : Xoel Mauri                    ║");
-        System.out.println("  ║  Autores : Bieito Martínez               ║");
-        System.out.println("  ║  Autores : Enrique Martín                ║");
-        System.out.println("  ║  Autores : Lukas Ouro                    ║");
-        System.out.println("  ║  Contacto: xoelmauri@icloud.com          ║");
-        System.out.println("  ╚══════════════════════════════════════════╝");
+    		File fichero = new File("informacion.txt");
+    		
+    		// Guardar
+    	    try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero))) {
+    	        bw.write("  Version : 2.0");          bw.newLine();
+    	        bw.write("  Autores : Miguel Riveiro"); bw.newLine();
+    	        bw.write("  Autores : Rubén González"); bw.newLine();
+    	        bw.write("  Autores : Anxo Negreira");  bw.newLine();
+    	        bw.write("  Autores : Xoel Mauri");     bw.newLine();
+    	        bw.write("  Autores : Bieito Martínez");bw.newLine();
+    	        bw.write("  Autores : Enrique Martín"); bw.newLine();
+    	        bw.write("  Autores : Lukas Ouro");     bw.newLine();
+    	        bw.write("  Contacto: xoelmauri@icloud.com"); bw.newLine();
+    	    } catch (IOException e) {
+    	        System.out.println("  [!] No se pudo guardar la informacion: " + e.getMessage());
+    	        return;
+    	    }
+    	    
+    	 // Leer e imprimir
+    	    System.out.println();
+    	    System.out.println("  ╔══════════════════════════════════════════╗");
+    	    System.out.println("  ║               INFORMACION                ║");
+    	    System.out.println("  ╠══════════════════════════════════════════╣");
+
+    	    try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
+    	        String linea;
+    	        while ((linea = br.readLine()) != null) {
+    	            System.out.println("  ║  " + linea);
+    	        }
+    	    } catch (IOException e) {
+    	        System.out.println("  [!] No se pudo leer la informacion: " + e.getMessage());
+    	    }
+
+    	    System.out.println("  ╚══════════════════════════════════════════╝");
     }
 }
