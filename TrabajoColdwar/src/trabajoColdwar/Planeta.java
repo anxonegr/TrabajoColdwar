@@ -218,36 +218,40 @@ public class Planeta {
      * @param misilesAtacar cantidad de misiles empleados en el ataque
      * @param atacante      {@link Planeta} que realiza el ataque
      */
-    public void combate(int misilesAtacar, Planeta atacante) {
+    public String combate(int misilesAtacar, Planeta atacante) {
 
         if (misilesAtacar > atacante.getMisilesRonda()) {
             System.out.println("  [!] No tienes suficientes misiles para atacar.");
-            return;
+            return "";
         }
-
         if (nombre.equals(atacante.getNombre())) {
             System.out.println("  [!] No puedes atacarte a ti mismo.");
-            return;
+            return "";
         }
-
         if (vidas <= 0) {
             System.out.println("  [!] El planeta " + nombre + " ya ha sido destruido.");
-            return;
+            return "";
         }
 
-        // Calcular multiplicador por interaccion de tipos
         double multiplicador = calcularMultiplicador(atacante.getTipo(), this.tipo);
 
-        // Esquive del planeta enano (50 %)
         if (tipo.equals("enano") && RANDOM.nextBoolean()) {
             atacante.setMisilesRonda(atacante.getMisilesRonda() - misilesAtacar);
-            System.out.println("  !! " + nombre + " ha ESQUIVADO el ataque! (Vidas: " + vidas + ")");
-            return;
+            String msg = "  !! " + nombre + " ha ESQUIVADO el ataque!";
+            System.out.println(msg + " (Vidas: " + vidas + ")");
+            return msg + "\n";
         }
 
         int danio = (int) (misilesAtacar * multiplicador);
         setVidas(vidas - danio);
         atacante.setMisilesRonda(atacante.getMisilesRonda() - misilesAtacar);
+
+        String msg = "  >> " + atacante.getNombre() + " (" + atacante.getNombreTipo() + ")"
+                + " ataca a " + nombre + " (" + getNombreTipo() + ")"
+                + " con " + misilesAtacar + " misiles."
+                + " Danio aplicado: " + danio
+                + " | Vidas de " + nombre + ": " + vidas;
+
 
         if (multiplicador > 1.0) {
             System.out.println("  Ventaja de tipo: danio DOBLE!");
@@ -256,9 +260,13 @@ public class Planeta {
         }
 
         if (vidas == 0) {
-            System.out.println("  !! El equipo " + nombre + " ha sido ELIMINADO !!");
+            String eliminado = "  !! El equipo " + nombre + " ha sido ELIMINADO !!";
+            System.out.println(eliminado);
             this.eliminadoEstaRonda = true;
+            return msg + "\n" + eliminado + "\n";
         }
+
+        return msg + "\n";
     }
 
     /**
