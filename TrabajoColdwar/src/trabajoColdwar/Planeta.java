@@ -241,8 +241,6 @@ public class Planeta {
         // Esquive del planeta enano (50 %)
         if (tipo.equals("enano") && RANDOM.nextBoolean()) {
             atacante.setMisilesRonda(atacante.getMisilesRonda() - misilesAtacar);
-            System.out.println("  >> " + atacante.getNombre() + " ataca a " + nombre
-                    + " con " + misilesAtacar + " misiles.");
             System.out.println("  !! " + nombre + " ha ESQUIVADO el ataque! (Vidas: " + vidas + ")");
             return;
         }
@@ -250,12 +248,6 @@ public class Planeta {
         int danio = (int) (misilesAtacar * multiplicador);
         setVidas(vidas - danio);
         atacante.setMisilesRonda(atacante.getMisilesRonda() - misilesAtacar);
-
-        System.out.println("  >> " + atacante.getNombre() + " (" + atacante.getNombreTipo() + ")"
-                + " ataca a " + nombre + " (" + getNombreTipo() + ")"
-                + " con " + misilesAtacar + " misiles."
-                + " Danio aplicado: " + danio
-                + " | Vidas de " + nombre + ": " + vidas);
 
         if (multiplicador > 1.0) {
             System.out.println("  Ventaja de tipo: danio DOBLE!");
