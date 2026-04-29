@@ -241,7 +241,8 @@ public class TrabajoColdwar {
      * @param conBonus {@code true} para activar el bonus aleatorio de misiles
      */
     public static void jugar(Scanner sc, boolean conBonus) {
-
+    		
+    		
         if (conBonus) {
             System.out.println("\n  [APARTADO EXTRA] Modo con bonus aleatorio de misiles activado.");
         }
@@ -292,6 +293,8 @@ public class TrabajoColdwar {
         boolean juegoActivo = true;
 
         while (juegoActivo) {
+        	
+        		String logRonda = "";
 
             System.out.println("\n  ╔══════════════════════════════╗");
             System.out.println("  ║         RONDA  " + ronda + "              ║");
@@ -317,13 +320,13 @@ public class TrabajoColdwar {
             // Turno de cada planeta que siga vivo
             for (Planeta p : planetas) {
                 if (p.getVidas() > 0 || p.isEliminadoEstaRonda()) {
-                    jugarTurno(p, planetas, sc, ronda);
+                		logRonda += jugarTurno(p, planetas, sc, ronda);
                     p.setEliminadoEstaRonda(false);
                 }
             }
 
             // Resumen al final de la ronda
-            int vivos = resumenRonda(planetas, ronda);
+            int vivos = resumenRonda(planetas, ronda, logRonda);
             if (vivos <= 1) {
                 juegoActivo = false;
             }
@@ -373,7 +376,9 @@ public class TrabajoColdwar {
      * @param sc            el {@link Scanner} de entrada
      * @param ronda         número de ronda actual (controla disponibilidad de defensa)
      */
-    static void jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc, int ronda) {
+    static String jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc, int ronda) {
+    	
+    		String logTurno = "";
 
         while (atacante.getMisilesRonda() > 0) {
 
@@ -463,8 +468,9 @@ public class TrabajoColdwar {
             if (numObjetivo == -1) {
                 int curacion = atacante.getMisilesRonda() / 2;
                 atacante.setVidas(atacante.getVidas() + curacion);
-                System.out.println("  [+] Te has curado " + curacion
-                        + " puntos de vida. Vidas totales: " + atacante.getVidas());
+                String msgCuracion = "  [+] " + atacante.getNombre() + " se ha curado "
+                        + curacion + " puntos. Vidas totales: " + atacante.getVidas();
+                logTurno += msgCuracion + "\n";
                 atacante.setMisilesRonda(0);
                 break;
             }
@@ -485,11 +491,12 @@ public class TrabajoColdwar {
                 }
             }
 
-            // Ejecutar el combate
-            listaPlanetas.get(numObjetivo).combate(misilesAtacar, atacante);
+            // Ejecutar el combate y acumular el log
+            logTurno += listaPlanetas.get(numObjetivo).combate(misilesAtacar, atacante);
         }
 
         System.out.println("  >> " + atacante.getNombre() + " ha agotado sus misiles.");
+        return logTurno;
     }
 
     /**
@@ -499,7 +506,7 @@ public class TrabajoColdwar {
      * @param ronda    número de la ronda recién terminada
      * @return número de equipos que siguen con vida
      */
-    public static int resumenRonda(ArrayList<Planeta> planetas, int ronda) {
+    public static int resumenRonda(ArrayList<Planeta> planetas, int ronda, String logRonda) {
         System.out.println("\n  ╔══════════════════════════════════════════╗");
         System.out.println("  ║      RESUMEN  RONDA  " + ronda + "                   ║");
         System.out.println("  ╠═══════════════════╦══════╦═══════════════╣");
@@ -522,6 +529,12 @@ public class TrabajoColdwar {
 
         System.out.println("  ╠═══════════════════╩══════╩═══════════════╣");
         System.out.println("  ║  Equipos vivos: " + vivos + "                          ║");
+        System.out.println("  ╚══════════════════════════════════════════╝");
+        
+        System.out.println("  ╠═══════════════════════════════════════════╣");
+        System.out.println("  ║            ATAQUES DE LA RONDA            ║");
+        System.out.println("  ╠═══════════════════════════════════════════╣");
+        System.out.println(logRonda);
         System.out.println("  ╚══════════════════════════════════════════╝");
 
         return vivos;
