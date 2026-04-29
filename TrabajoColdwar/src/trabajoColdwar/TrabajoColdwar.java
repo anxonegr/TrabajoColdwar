@@ -24,7 +24,7 @@ import java.util.Scanner;
  *
  * @version 2.0
  */
-public class TrabajoColdWar {
+public class TrabajoColdwar {
 
     /** Nombre del fichero donde se persiste el historial de ganadores. */
     private static final String FICHERO_GANADORES = "ganadores.txt";
