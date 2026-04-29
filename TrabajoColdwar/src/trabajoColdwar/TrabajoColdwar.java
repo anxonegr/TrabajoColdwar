@@ -24,7 +24,7 @@ import java.util.Scanner;
  *
  * @version 2.0
  */
-public class TrabajoColdwar {
+public class TrabajoColdWar {
 
     /** Nombre del fichero donde se persiste el historial de ganadores. */
     private static final String FICHERO_GANADORES = "ganadores.txt";
@@ -129,7 +129,7 @@ public class TrabajoColdwar {
         System.out.println("    5. Gigante gaseoso (400 vidas, empieza con 10 misiles +10/ronda)");
         System.out.println("    6. Planeta enano   (100 vidas, 50% de esquive)");
 
-        String tipo   = "";
+        String tipo    = "";
         boolean valido = false;
 
         while (!valido) {
@@ -165,7 +165,6 @@ public class TrabajoColdwar {
      * @param nombreGanador nombre del planeta ganador
      */
     public static void guardarGanador(String nombreGanador) {
-        // Guardamos el fichero en el mismo directorio desde el que se ejecuta el programa
         File fichero = new File(FICHERO_GANADORES);
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero, true))) {
             bw.write(nombreGanador);
@@ -198,13 +197,13 @@ public class TrabajoColdwar {
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
-            String linea ="";
+            String linea = "";
             int partida = 1;
             boolean hayRegistros = false;
 
             while ((linea = br.readLine()) != null) {
                 if (!linea.isBlank()) {
-                		System.out.println("  ║  Partida " + partida + ": " + linea);
+                    System.out.println("  ║  Partida " + partida + ": " + linea);
                     partida++;
                     hayRegistros = true;
                 }
@@ -247,7 +246,7 @@ public class TrabajoColdwar {
             System.out.println("\n  [APARTADO EXTRA] Modo con bonus aleatorio de misiles activado.");
         }
 
-        // Número de equipos (mínimo 2)
+        // Número de equipos (mínimo 3)
         System.out.print("\n  Cuantos equipos van a jugar? (minimo 3): ");
         int numPlanetas = leerNumero(sc);
         while (numPlanetas < 3) {
@@ -257,20 +256,20 @@ public class TrabajoColdwar {
 
         // Creación de planetas
         ArrayList<Planeta> planetas = new ArrayList<>();
-        
+
 //        Recorre los planetas ya creados
         for (int i = 0; i < numPlanetas; i++) {
-            String nombre="";
+            String nombre = "";
             boolean repetido = false;
 
             do {
 //            	Introduce nombre del equipo
-            	repetido = false;
+                repetido = false;
                 System.out.print("  Nombre del equipo " + (i + 1) + ": ");
                 nombre = sc.next();
 
                 // Comprobar si ya existe
-                for (Planeta p: planetas) {
+                for (Planeta p : planetas) {
                     if (p.getNombre().equalsIgnoreCase(nombre)) {
                         repetido = true;
                         System.out.println("Ese nombre ya está en uso, prueba otro.");
@@ -279,16 +278,16 @@ public class TrabajoColdwar {
                 }
 
             } while (repetido);
-            
+
             String tipo   = seleccionarTipo(sc);
-           Planeta nuevo = new Planeta (nombre,tipo);
-           planetas.add(nuevo);
+            Planeta nuevo = new Planeta(nombre, tipo);
+            planetas.add(nuevo);
             System.out.println("  -> " + nombre + " creado como " + nuevo.getNombreTipo()
                     + " con " + nuevo.getNombreTipo() + " vidas y "
-                    +nuevo.getMisilesRonda() + " misiles iniciales.");
+                    + nuevo.getMisilesRonda() + " misiles iniciales.");
         }
 
-        Random  random  = new Random();
+        Random  random      = new Random();
         int     ronda       = 1;
         boolean juegoActivo = true;
 
@@ -307,7 +306,7 @@ public class TrabajoColdwar {
             if (conBonus && ronda % 2 == 0) {
                 int idx = random.nextInt(planetas.size());
                 Planeta p = planetas.get(idx);
-                
+
                 if (p.getVidas() > 0) {
                     p.setMisilesRonda(p.getMisilesRonda() + 15);
                     System.out.println("\n  BONUS: el equipo '" + p.getNombre()
@@ -318,7 +317,7 @@ public class TrabajoColdwar {
             // Turno de cada planeta que siga vivo
             for (Planeta p : planetas) {
                 if (p.getVidas() > 0 || p.isEliminadoEstaRonda()) {
-                    jugarTurno(p, planetas, sc);
+                    jugarTurno(p, planetas, sc, ronda);
                     p.setEliminadoEstaRonda(false);
                 }
             }
@@ -333,8 +332,8 @@ public class TrabajoColdwar {
 
         // Determinar ganador o empate
         Planeta ganador = null;
-        int vivosFinal = 0;
-        
+        int vivosFinal  = 0;
+
         for (Planeta p : planetas) {
             if (p.getVidas() > 0) {
                 vivosFinal++;
@@ -365,14 +364,16 @@ public class TrabajoColdwar {
      * <ul>
      *   <li>Un planeta enemigo al que atacar y cuántos misiles usar.</li>
      *   <li>La opción {@code 0} para convertir todos los misiles restantes
-     *       en puntos de vida (ratio 1 misil → 0,5 vidas).</li>
+     *       en puntos de vida (ratio 1 misil → 0,5 vidas), solo disponible
+     *       a partir de la ronda 2.</li>
      * </ul>
      *
      * @param atacante      el {@link Planeta} que realiza el ataque en este turno
      * @param listaPlanetas array con todos los planetas de la partida
      * @param sc            el {@link Scanner} de entrada
+     * @param ronda         número de ronda actual (controla disponibilidad de defensa)
      */
-    static void jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc) {
+    static void jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc, int ronda) {
 
         while (atacante.getMisilesRonda() > 0) {
 
@@ -386,54 +387,75 @@ public class TrabajoColdwar {
 
             // Mostrar lista de objetivos
             System.out.println("  A que planeta quieres atacar?");
-            
+
+//          lista donde se guardan los índices reales
+            ArrayList<Integer> indicesValidos = new ArrayList<>();
+
             int opc = 1;
-            
+
             for (int i = 0; i < listaPlanetas.size(); i++) {
-            	
-            	Planeta p = listaPlanetas.get(i);
-            	
-            	if (p == atacante) {
-            		continue;
-            	}
-            	
-                String estadoStr ="";
-                
+
+                Planeta p = listaPlanetas.get(i);
+
+                if (p == atacante) {
+                    continue;
+                }
+
+                // Guardamos el índice real
+                indicesValidos.add(i);
+
+                String estadoStr;
+
+//              Mostramos de los planetas vivos
                 if (p.getVidas() > 0) {
                     estadoStr = "(Vidas: " + p.getVidas()
                             + " | " + p.getNombreTipo() + ")";
-                    
                 } else {
                     estadoStr = "[ELIMINADO]";
                 }
+
                 System.out.println("    " + opc + ". " + p.getNombre()
                         + " " + estadoStr);
+
                 opc++;
             }
-            System.out.println("    0. Convertir misiles restantes en defensa");
 
-            int     numObjetivo    = -2;
+//          la defensa se muestra a partir de la ronda 2
+            if (ronda > 1) {
+                System.out.println("    0. Convertir misiles restantes en defensa");
+            }
+
+            int numObjetivo    = -2;
             boolean objetivoValido = false;
 
             while (!objetivoValido) {
+
                 System.out.print("  Objetivo: ");
                 int eleccion = leerNumero(sc);
-                numObjetivo  = eleccion - 1;
 
-                if (numObjetivo == -1) {
+//              si pulsa 0 en la primera ronda forzamos opcion no valida
+                if (eleccion == 0 && ronda == 1) {
+                    eleccion = -99;
+                }
+
+//              Opcion de defenderse a partir de la ronda 2
+                if (eleccion == 0) {
+                    numObjetivo = -1;
                     objetivoValido = true;
 
-                } else if (numObjetivo >= 0 && numObjetivo < listaPlanetas.size()) {
-                    if (listaPlanetas.get(numObjetivo).getVidas() <= 0) {
-                        System.out.println("  [!] Ese planeta ya ha sido eliminado. Elige otro.");
-                    } else if (listaPlanetas.get(numObjetivo) == atacante) {
-                        System.out.println("  [!] No puedes atacarte a ti mismo.");
+                } else if (eleccion >= 1 && eleccion <= indicesValidos.size()) {
+
+                    int indiceReal = indicesValidos.get(eleccion - 1);
+
+                    if (listaPlanetas.get(indiceReal).getVidas() <= 0) {
+                        System.out.println("  [!] Ese planeta ya ha sido eliminado.");
                     } else {
+                        numObjetivo = indiceReal;
                         objetivoValido = true;
                     }
+
                 } else {
-                    System.out.println("  [!] Opcion no valida. Introduce un numero"
-                            + " entre 0 y " + listaPlanetas.size() + ".");
+                    System.out.println("  [!] Opcion no valida.");
                 }
             }
 
@@ -478,7 +500,6 @@ public class TrabajoColdwar {
      * @return número de equipos que siguen con vida
      */
     public static int resumenRonda(ArrayList<Planeta> planetas, int ronda) {
-    	
         System.out.println("\n  ╔══════════════════════════════════════════╗");
         System.out.println("  ║      RESUMEN  RONDA  " + ronda + "                   ║");
         System.out.println("  ╠═══════════════════╦══════╦═══════════════╣");
@@ -487,7 +508,7 @@ public class TrabajoColdwar {
 
         int vivos = 0;
         for (Planeta p : planetas) {
-            String estadoStr= "";
+            String estadoStr = "";
             if (p.getVidas() > 0) {
                 estadoStr = p.getNombreTipo();
                 vivos++;
@@ -538,42 +559,43 @@ public class TrabajoColdwar {
     }
 
     /**
-     * Imprime información sobre el juego y sus autores.
+     * Guarda la información del juego en un fichero y la muestra por pantalla.
+     * 
      */
     public static void informacion() {
-    		File fichero = new File("informacion.txt");
-    		
-    		// Guardar
-    	    try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero))) {
-    	        bw.write("  Version : 2.0");          bw.newLine();
-    	        bw.write("  Autores : Miguel Riveiro"); bw.newLine();
-    	        bw.write("  Autores : Rubén González"); bw.newLine();
-    	        bw.write("  Autores : Anxo Negreira");  bw.newLine();
-    	        bw.write("  Autores : Xoel Mauri");     bw.newLine();
-    	        bw.write("  Autores : Bieito Martínez");bw.newLine();
-    	        bw.write("  Autores : Enrique Martín"); bw.newLine();
-    	        bw.write("  Autores : Lukas Ouro");     bw.newLine();
-    	        bw.write("  Contacto: xoelmauri@icloud.com"); bw.newLine();
-    	    } catch (IOException e) {
-    	        System.out.println("  [!] No se pudo guardar la informacion: " + e.getMessage());
-    	        return;
-    	    }
-    	    
-    	 // Leer e imprimir
-    	    System.out.println();
-    	    System.out.println("  ╔══════════════════════════════════════════╗");
-    	    System.out.println("  ║               INFORMACION                ║");
-    	    System.out.println("  ╠══════════════════════════════════════════╣");
+        File fichero = new File("informacion.txt");
 
-    	    try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
-    	        String linea;
-    	        while ((linea = br.readLine()) != null) {
-    	            System.out.println("  ║  " + linea);
-    	        }
-    	    } catch (IOException e) {
-    	        System.out.println("  [!] No se pudo leer la informacion: " + e.getMessage());
-    	    }
+        // Guardar
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero))) {
+            bw.write("  Version : 2.0");           bw.newLine();
+            bw.write("  Autores : Miguel Riveiro"); bw.newLine();
+            bw.write("  Autores : Rubén González"); bw.newLine();
+            bw.write("  Autores : Anxo Negreira");  bw.newLine();
+            bw.write("  Autores : Xoel Mauri");     bw.newLine();
+            bw.write("  Autores : Bieito Martínez");bw.newLine();
+            bw.write("  Autores : Enrique Martín"); bw.newLine();
+            bw.write("  Autores : Lukas Ouro");     bw.newLine();
+            bw.write("  Contacto: xoelmauri@icloud.com"); bw.newLine();
+        } catch (IOException e) {
+            System.out.println("  [!] No se pudo guardar la informacion: " + e.getMessage());
+            return;
+        }
 
-    	    System.out.println("  ╚══════════════════════════════════════════╝");
+        // Leer e imprimir
+        System.out.println();
+        System.out.println("  ╔══════════════════════════════════════════╗");
+        System.out.println("  ║               INFORMACION                ║");
+        System.out.println("  ╠══════════════════════════════════════════╣");
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                System.out.println("  ║  " + linea);
+            }
+        } catch (IOException e) {
+            System.out.println("  [!] No se pudo leer la informacion: " + e.getMessage());
+        }
+
+        System.out.println("  ╚══════════════════════════════════════════╝");
     }
 }
