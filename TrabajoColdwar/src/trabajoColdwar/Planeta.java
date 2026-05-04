@@ -285,4 +285,19 @@ public class Planeta {
         if (tipoAtacante.equals("verde") && tipoDefensor.equals("rojo"))  return 0.5;
         return 1.0;
     }
+        
+    private String identificador;
+    
+    // Modifica el constructor para que reciba el id:
+    public Planeta(String nombre, String identificador) {
+        this.nombre = nombre;
+        this.identificador = identificador;
+        this.vidas = 200;
+        this.misilesRonda = 50;
+    }
+    
+    // Añade el getter al final:
+    public String getIdentificador() {
+        return identificador;
+    }
 }
