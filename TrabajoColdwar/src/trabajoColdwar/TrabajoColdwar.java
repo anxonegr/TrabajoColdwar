@@ -1,5 +1,7 @@
 package trabajoColdwar;
 
+import java.io.PrintWriter;
+import trabajoColdWar_Utils.Validaciones;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -281,7 +283,32 @@ public class TrabajoColdwar {
             } while (repetido);
 
             String tipo   = seleccionarTipo(sc);
-            Planeta nuevo = new Planeta(nombre, tipo);
+            
+            } while (repetido);
+
+            // BUCLE PARA EL IDENTIFICADOR 
+            String id = "";
+            boolean idValido = false;
+            
+            while (!idValido) {
+                System.out.print("  Introduce el identificador (4 números y 3 letras mayúsculas, ej: 1111ABC): ");
+                id = sc.next();
+                
+                // Llamamos a la clase Validaciones
+                if (trabajoColdWar_Utils.Validaciones.validarIdentificador(id)) {
+                    idValido = true;
+                } else {
+                    System.out.println("  [!] Error: El identificador es incorrecto. Debe tener 4 números y 3 letras mayúsculas.");
+                }
+            }
+
+            String tipo   = seleccionarTipo(sc);
+            Planeta nuevo = new Planeta(nombre, tipo, id); 
+            planetas.add(nuevo);
+            System.out.println("  -> " + nombre + " creado como " + nuevo.getNombreTipo()
+                    + " con " + nuevo.getNombreTipo() + " vidas y "
+                    + nuevo.getMisilesRonda() + " misiles iniciales.");
+        }
             planetas.add(nuevo);
             System.out.println("  -> " + nombre + " creado como " + nuevo.getNombreTipo()
                     + " con " + nuevo.getNombreTipo() + " vidas y "
