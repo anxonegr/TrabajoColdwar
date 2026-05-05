@@ -3,220 +3,213 @@ package trabajoColdwar;
 import java.util.Random;
 
 /**
- * Representa un planeta (equipo) participante en la partida de ColdWar.
+ * Clase abstracta que representa un planeta-equipo en el juego <b>ColdWar</b>.
  * <p>
- * El atributo {@code tipo} es un {@link String} con uno de los siguientes
- * valores posibles:
+ * Define el estado base (vidas, misiles) y la lógica de combate común
+ * a todos los planetas. Las subclases son responsables de declarar su propio
+ * tipo y de implementar {@link #getTipo()} y {@link #getNombreTipo()}.
+ * También pueden sobreescribir {@link #reponerMisiles(int)} y
+ * {@link #combate(int, Planeta)} para añadir comportamiento especial.
  * </p>
- * <ul>
- *   <li>{@code "normal"}   – sin ventajas ni desventajas.</li>
- *   <li>{@code "rojo"}     – x2 al verde, /2 al azul.</li>
- *   <li>{@code "azul"}     – x2 al rojo,  /2 al verde.</li>
- *   <li>{@code "verde"}    – x2 al azul,  /2 al rojo.</li>
- *   <li>{@code "gaseoso"}  – doble de vida (400), empieza con 10 misiles y
- *                            gana 10 más cada ronda.</li>
- *   <li>{@code "enano"}    – mitad de vida (100), 50 % de probabilidad de
- *                            esquivar cada ataque.</li>
- * </ul>
  *
- * @version 2.0
+ * <p>Tabla de ventajas de tipo:</p>
+ * <pre>
+ *   Atacante → Defensor  | Multiplicador
+ *   ─────────────────────┼──────────────
+ *   rojo     → verde     |  ×2.0
+ *   rojo     → azul      |  ×0.5
+ *   azul     → rojo      |  ×2.0
+ *   azul     → verde     |  ×0.5
+ *   verde    → azul      |  ×2.0
+ *   verde    → rojo      |  ×0.5
+ *   mismo / normal       |  ×1.0
+ * </pre>
+ *
+ * @version 3.1
  */
-public class Planeta {
+public abstract class Planeta {
 
-    // ─────────────────────────────────────────────
-    //  Atributos de instancia
-    // ─────────────────────────────────────────────
-
-    /** Vidas actuales del planeta. Nunca bajan de 0. */
+    /** Puntos de vida actuales del planeta. Nunca baja de 0. */
     private int vidas;
 
-    /** Nombre identificativo del equipo. */
+    /** Nombre identificador del equipo. */
     private String nombre;
 
-    /** Misiles de que dispone el planeta en la ronda actual. */
+    /** Misiles disponibles para la ronda en curso. Nunca baja de 0. */
     private int misilesRonda;
-
-    /**
-     * Tipo de planeta: "normal", "rojo", "azul", "verde", "gaseoso" o "enano".
-     */
-    private String tipo;
-
-    /** Número total de equipos creados desde el inicio de la sesión. */
+    
+    private String identificador;
+    
+    /** Contador global de planetas creados durante la sesión. */
     private static int numeroEquipos = 0;
 
-    /** Generador de números aleatorios compartido para el esquive del enano. */
-    private static final Random RANDOM = new Random();
-    
-    /** Indica si el planeta ha sido eliminado en la ronda que transcurre para poder darle un último turno. */
-    private boolean eliminadoEstaRonda = false;
-    
-    public boolean isEliminadoEstaRonda() { return eliminadoEstaRonda; }
-    public void setEliminadoEstaRonda(boolean b) { eliminadoEstaRonda = b; }
-
-    // ─────────────────────────────────────────────
-    //  Constructor
-    // ─────────────────────────────────────────────
+    /**
+     * Generador de números aleatorios compartido por todas las subclases.
+     * Se declara {@code protected} para que {@link PlanetaEspecial} lo use
+     * en la lógica de esquive.
+     */
+    protected static final Random RANDOM = new Random();
 
     /**
-     * Crea un nuevo planeta con el nombre y tipo indicados.
-     * <ul>
-     *   <li>normal / rojo / azul / verde: 200 vidas, 50 misiles.</li>
-     *   <li>gaseoso:                      400 vidas, 10 misiles.</li>
-     *   <li>enano:                        100 vidas, 50 misiles.</li>
-     * </ul>
-     * Incrementa el contador estático de equipos.
-     *
-     * @param nombre nombre identificativo del equipo
-     * @param tipo   tipo de planeta ("normal", "rojo", "azul", "verde", "gaseoso" o "enano")
+     * Indica si el planeta fue eliminado <em>durante la ronda actual</em>.
+     * Se usa para que el planeta pueda consumir su turno de ataque aunque
+     * haya sido destruido por un rival en la misma ronda, y se resetea al
+     * finalizar dicho turno.
      */
-    public Planeta(String nombre, String tipo) {
-        this.nombre = nombre;
-        this.tipo   = tipo;
+    private boolean eliminadoEstaRonda = false;
 
-        if (tipo.equals("gaseoso")) {
-            this.vidas        = 400;
-            this.misilesRonda = 10;
-        } else if (tipo.equals("enano")) {
-            this.vidas        = 100;
-            this.misilesRonda = 50;
-        } else {
-            this.vidas        = 200;
-            this.misilesRonda = 50;
-        }
+    // ── getters / setters de eliminadoEstaRonda ──────────────────
 
+    /**
+     * Devuelve {@code true} si el planeta fue eliminado en la ronda actual.
+     *
+     * @return {@code true} si está marcado como eliminado esta ronda
+     */
+    public boolean isEliminadoEstaRonda()        { return eliminadoEstaRonda; }
+
+    /**
+     * Establece la marca de eliminado-esta-ronda.
+     *
+     * @param b {@code true} para marcar al planeta como eliminado en la ronda actual
+     */
+    public void setEliminadoEstaRonda(boolean b) { eliminadoEstaRonda = b; }
+
+    // ── Constructor ──────────────────────────────────────────────
+
+    /**
+     * Crea un nuevo planeta con los valores base: 200 vidas y 50 misiles por ronda.
+     * Incrementa el contador estático {@link #numeroEquipos}.
+     * <p>
+     * El tipo no se recibe aquí; cada subclase lo gestiona internamente.
+     * </p>
+     *
+     * @param nombre nombre identificador del equipo; no puede estar vacío
+     */
+    public Planeta(String nombre) {
+        this.nombre       = nombre;
+        this.vidas        = 200;
+        this.misilesRonda = 50;
         numeroEquipos++;
     }
 
-    // ─────────────────────────────────────────────
-    //  Getters y setters
-    // ─────────────────────────────────────────────
+    // ── Getters / setters ────────────────────────────────────────
 
     /**
-     * Devuelve las vidas actuales del planeta.
+     * Devuelve los puntos de vida actuales del planeta.
      *
-     * @return vidas actuales (siempre &ge; 0)
+     * @return vidas actuales (siempre ≥ 0)
      */
-    public int getVidas() {
-        return vidas;
+    public int getVidas() { return vidas; }
+
+    /**
+     * Establece las vidas del planeta. Si el valor es negativo se fija a 0.
+     *
+     * @param vidas nuevos puntos de vida
+     */
+    public void setVidas(int vidas) { this.vidas = Math.max(0, vidas); }
+
+    /**
+     * Devuelve el nombre identificador del equipo.
+     *
+     * @return nombre del planeta
+     */
+    public String getNombre() { return nombre; }
+
+    /**
+     * Devuelve los misiles disponibles para la ronda en curso.
+     *
+     * @return misiles restantes (siempre ≥ 0)
+     */
+    public int getMisilesRonda() { return misilesRonda; }
+
+    /**
+     * Establece los misiles disponibles para la ronda en curso.
+     * Si el valor es negativo se fija a 0.
+     *
+     * @param m nueva cantidad de misiles
+     */
+    public void setMisilesRonda(int m) { this.misilesRonda = Math.max(0, m); }
+
+    /**
+     * Devuelve el número total de planetas creados desde el inicio de la sesión.
+     *
+     * @return número de equipos registrados
+     */
+    public static int getNumeroEquipos() { return numeroEquipos; }
+
+    // ── Métodos abstractos ───────────────────────────────────────
+
+    /**
+     * Devuelve el tipo interno del planeta en minúsculas
+     * (p. ej. {@code "rojo"}, {@code "gaseoso"}).
+     * <p>
+     * Cada subclase concreta <b>debe</b> implementar este método gestionando
+     * su propio campo de tipo.
+     * </p>
+     *
+     * @return tipo del planeta en minúsculas, nunca {@code null}
+     */
+    public abstract String getTipo();
+
+    /**
+     * Devuelve el nombre legible del tipo de planeta para mostrarlo en pantalla
+     * (p. ej. {@code "Rojo"}, {@code "Gigante Gaseoso"}).
+     * <p>
+     * Cada subclase concreta <b>debe</b> implementar este método.
+     * </p>
+     *
+     * @return cadena con el nombre del tipo, nunca {@code null}
+     */
+    public abstract String getNombreTipo();
+    
+    public String getIdentificador() { 
+        return identificador; 
     }
 
-    /**
-     * Establece las vidas del planeta.
-     * El valor se capea a 0 por abajo para evitar vidas negativas.
-     *
-     * @param vidas nuevo valor de vidas
-     */
-    public void setVidas(int vidas) {
-        this.vidas = Math.max(0, vidas);
+    public void setIdentificador(String identificador) { 
+        this.identificador = identificador; 
     }
 
-    /**
-     * Devuelve el nombre del planeta.
-     *
-     * @return nombre del equipo
-     */
-    public String getNombre() {
-        return nombre;
-    }
+    // ── Lógica de ronda ──────────────────────────────────────────
 
     /**
-     * Devuelve los misiles disponibles en la ronda actual.
+     * Repone los misiles del planeta al inicio de cada ronda.
+     * La implementación base restaura el valor a 50, siempre que el planeta
+     * siga vivo. Las subclases pueden sobreescribir este método para aplicar
+     * reglas de reposición distintas (p. ej. el gigante gaseoso).
      *
-     * @return misiles de ronda actuales (siempre &ge; 0)
-     */
-    public int getMisilesRonda() {
-        return misilesRonda;
-    }
-
-    /**
-     * Establece la cantidad de misiles para la ronda actual.
-     * El valor se capea a 0 por abajo.
-     *
-     * @param misilesRonda nuevo valor de misiles
-     */
-    public void setMisilesRonda(int misilesRonda) {
-        this.misilesRonda = Math.max(0, misilesRonda);
-    }
-
-    /**
-     * Devuelve el tipo de planeta en minúsculas.
-     *
-     * @return tipo del planeta ("normal", "rojo", "azul", "verde", "gaseoso" o "enano")
-     */
-    public String getTipo() {
-        return tipo;
-    }
-
-    /**
-     * Devuelve el nombre legible del tipo de planeta (con mayúscula inicial).
-     *
-     * @return cadena con el nombre del tipo
-     */
-    public String getNombreTipo() {
-        if (tipo.equals("rojo"))    return "Rojo";
-        if (tipo.equals("azul"))    return "Azul";
-        if (tipo.equals("verde"))   return "Verde";
-        if (tipo.equals("gaseoso")) return "Gigante Gaseoso";
-        if (tipo.equals("enano"))   return "Planeta Enano";
-        return "Normal";
-    }
-
-    /**
-     * Devuelve el número total de equipos creados durante la sesión.
-     *
-     * @return contador estático de equipos
-     */
-    public static int getNumeroEquipos() {
-        return numeroEquipos;
-    }
-
-    // ─────────────────────────────────────────────
-    //  Lógica de ronda
-    // ─────────────────────────────────────────────
-
-    /**
-     * Repone los misiles al inicio de una nueva ronda.
-     * <ul>
-     *   <li>gaseoso: 10 * numRonda misiles (crece cada ronda).</li>
-     *   <li>Resto:   50 misiles fijos.</li>
-     * </ul>
-     * No hace nada si el planeta ya está eliminado.
-     *
-     * @param numRonda número de la ronda que comienza (empezando en 1)
+     * @param numRonda número de la ronda actual (1-based); ignorado en la
+     *                 implementación base, pero disponible para las subclases
      */
     public void reponerMisiles(int numRonda) {
-        if (vidas < 0) {
-            return;
-        }
-        if (tipo.equals("gaseoso")) {
-            setMisilesRonda(10 * numRonda);
-        } else {
-            setMisilesRonda(50);
-        }
+        if (vidas <= 0) return;
+        setMisilesRonda(50);
     }
 
-    // ─────────────────────────────────────────────
-    //  Lógica de combate
-    // ─────────────────────────────────────────────
+    // ── Lógica de combate ────────────────────────────────────────
 
     /**
-     * Procesa un ataque recibido de otro planeta.
+     * Ejecuta un ataque de {@code atacante} sobre este planeta.
      * <p>
-     * Aplica las validaciones en este orden:
-     * </p>
-     * <ol>
-     *   <li>El atacante no puede gastar más misiles de los que posee.</li>
-     *   <li>Un planeta no puede atacarse a sí mismo.</li>
-     *   <li>No se puede atacar a un planeta ya eliminado.</li>
-     * </ol>
-     * <p>
-     * Si pasa todas las restricciones, se calcula el multiplicador de daño
-     * según la interacción de tipos y, en el caso del planeta enano, se
-     * resuelve el posible esquive (50 %) antes de aplicar el daño.
+     * El daño base es igual a los misiles usados, multiplicado por el
+     * factor de ventaja de tipo obtenido de {@link #calcularMultiplicador}.
+     * Los misiles consumidos se descuentan del atacante.
+     * Si el planeta llega a 0 vidas, se marca como eliminado esta ronda.
      * </p>
      *
-     * @param misilesAtacar cantidad de misiles empleados en el ataque
-     * @param atacante      {@link Planeta} que realiza el ataque
+     * <p>Condiciones de rechazo (no se realiza el ataque):</p>
+     * <ul>
+     *   <li>El atacante no tiene suficientes misiles.</li>
+     *   <li>El planeta objetivo es el propio atacante.</li>
+     *   <li>El planeta objetivo ya ha sido destruido.</li>
+     * </ul>
+     *
+     * @param misilesAtacar número de misiles que el atacante desea usar; debe ser
+     *                      mayor que 0 y menor o igual a {@link #getMisilesRonda()}
+     *                      del atacante
+     * @param atacante      planeta que lanza el ataque
+     * @return cadena con el resumen del ataque para el log de ronda;
+     *         cadena vacía si el ataque fue rechazado
      */
     public String combate(int misilesAtacar, Planeta atacante) {
 
@@ -233,16 +226,8 @@ public class Planeta {
             return "";
         }
 
-        double multiplicador = calcularMultiplicador(atacante.getTipo(), this.tipo);
-
-        if (tipo.equals("enano") && RANDOM.nextBoolean()) {
-            atacante.setMisilesRonda(atacante.getMisilesRonda() - misilesAtacar);
-            String msg = "  !! " + nombre + " ha ESQUIVADO el ataque!";
-            System.out.println(msg + " (Vidas: " + vidas + ")");
-            return msg + "\n";
-        }
-
-        int danio = (int) (misilesAtacar * multiplicador);
+        double multiplicador = calcularMultiplicador(atacante.getTipo(), this.getTipo());
+        int    danio         = (int)(misilesAtacar * multiplicador);
         setVidas(vidas - danio);
         atacante.setMisilesRonda(atacante.getMisilesRonda() - misilesAtacar);
 
@@ -252,12 +237,8 @@ public class Planeta {
                 + " Danio aplicado: " + danio
                 + " | Vidas de " + nombre + ": " + vidas;
 
-
-        if (multiplicador > 1.0) {
-            System.out.println("  Ventaja de tipo: danio DOBLE!");
-        } else if (multiplicador < 1.0) {
-            System.out.println("  Desventaja de tipo: danio a la MITAD.");
-        }
+        if (multiplicador > 1.0) System.out.println("  Ventaja de tipo: danio DOBLE!");
+        else if (multiplicador < 1.0) System.out.println("  Desventaja de tipo: danio a la MITAD.");
 
         if (vidas == 0) {
             String eliminado = "  !! El equipo " + nombre + " ha sido ELIMINADO !!";
@@ -265,18 +246,19 @@ public class Planeta {
             this.eliminadoEstaRonda = true;
             return msg + "\n" + eliminado + "\n";
         }
-
         return msg + "\n";
     }
 
     /**
-     * Calcula el multiplicador de daño según la interacción de tipos.
+     * Calcula el multiplicador de daño según la relación de tipos entre atacante
+     * y defensor, siguiendo el triángulo de ventajas rojo–azul–verde.
      *
-     * @param tipoAtacante tipo del planeta que ataca
-     * @param tipoDefensor tipo del planeta que recibe el ataque
-     * @return 2.0 si hay ventaja, 0.5 si hay desventaja, 1.0 en caso neutro
+     * @param tipoAtacante tipo del planeta atacante en minúsculas
+     * @param tipoDefensor tipo del planeta defensor en minúsculas
+     * @return {@code 2.0} si hay ventaja, {@code 0.5} si hay desventaja,
+     *         {@code 1.0} en caso neutro
      */
-    private double calcularMultiplicador(String tipoAtacante, String tipoDefensor) {
+    protected double calcularMultiplicador(String tipoAtacante, String tipoDefensor) {
         if (tipoAtacante.equals("rojo")  && tipoDefensor.equals("verde")) return 2.0;
         if (tipoAtacante.equals("rojo")  && tipoDefensor.equals("azul"))  return 0.5;
         if (tipoAtacante.equals("azul")  && tipoDefensor.equals("rojo"))  return 2.0;
@@ -284,20 +266,5 @@ public class Planeta {
         if (tipoAtacante.equals("verde") && tipoDefensor.equals("azul"))  return 2.0;
         if (tipoAtacante.equals("verde") && tipoDefensor.equals("rojo"))  return 0.5;
         return 1.0;
-    }
-        
-    private String identificador;
-    
-    // Modifica el constructor para que reciba el id:
-    public Planeta(String nombre, String identificador) {
-        this.nombre = nombre;
-        this.identificador = identificador;
-        this.vidas = 200;
-        this.misilesRonda = 50;
-    }
-    
-    // Añade el getter al final:
-    public String getIdentificador() {
-        return identificador;
     }
 }
