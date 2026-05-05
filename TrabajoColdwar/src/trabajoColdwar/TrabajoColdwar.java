@@ -1,7 +1,5 @@
 package trabajoColdwar;
 
-import java.io.PrintWriter;
-import trabajoColdWar_Utils.Validaciones;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,7 +22,7 @@ import java.util.Scanner;
  * <b>Apartado extra:</b> ejecuta el juego base añadiendo un bonus aleatorio
  * de 15 misiles a un equipo vivo al inicio de cada ronda par.
  *
- * @version 2.0
+ * @version 3.0
  */
 public class TrabajoColdwar {
 
@@ -35,12 +33,6 @@ public class TrabajoColdwar {
     //  Punto de entrada
     // ─────────────────────────────────────────────
 
-    /**
-     * Punto de entrada del programa.
-     * Muestra el menú principal en bucle hasta que el usuario elige salir.
-     *
-     * @param args argumentos de línea de comandos (no utilizados)
-     */
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         boolean salir = false;
@@ -66,13 +58,6 @@ public class TrabajoColdwar {
     //  Utilidades de entrada
     // ─────────────────────────────────────────────
 
-    /**
-     * Lee un número entero desde la consola, descartando cualquier entrada
-     * no numérica para evitar que el programa lance una excepción.
-     *
-     * @param sc el {@link Scanner} de entrada
-     * @return el número entero válido introducido por el usuario
-     */
     public static int leerNumero(Scanner sc) {
         while (true) {
             try {
@@ -88,12 +73,6 @@ public class TrabajoColdwar {
     //  Menú principal
     // ─────────────────────────────────────────────
 
-    /**
-     * Imprime el menú principal y devuelve la opción elegida por el usuario.
-     *
-     * @param sc el {@link Scanner} de entrada
-     * @return número de opción seleccionada
-     */
     public static int menu(Scanner sc) {
         System.out.println();
         System.out.println("  ╔══════════════════════════╗");
@@ -111,18 +90,22 @@ public class TrabajoColdwar {
     }
 
     // ─────────────────────────────────────────────
-    //  Selección de tipo de planeta
+    //  Selección de tipo de planeta  ← ÚNICA PARTE QUE CAMBIA
     // ─────────────────────────────────────────────
 
     /**
-     * Muestra el menú de tipos de planeta y devuelve el tipo elegido como String.
-     * Repite la pregunta si la opción no es válida.
+     * Muestra el menú de tipos de planeta y devuelve la instancia correcta.
+     * <p>
+     * Si el tipo elegido es "gaseoso" o "enano" crea un {@link PlanetaEspecial};
+     * para el resto crea un {@link Planeta} normal.
+     * El tipo de retorno es siempre {@link Planeta} (polimorfismo).
+     * </p>
      *
-     * @param sc el {@link Scanner} de entrada
-     * @return tipo de planeta en minúsculas ("normal", "rojo", "azul", "verde",
-     *         "gaseoso" o "enano")
+     * @param sc     el {@link Scanner} de entrada
+     * @param nombre nombre del equipo ya elegido
+     * @return instancia de {@link Planeta} o {@link PlanetaEspecial}
      */
-    public static String seleccionarTipo(Scanner sc) {
+    public static Planeta seleccionarTipo(Scanner sc, String nombre) {
         System.out.println("  Elige el tipo de planeta:");
         System.out.println("    1. Normal          (200 vidas, 50 misiles/ronda)");
         System.out.println("    2. Rojo            (x2 al verde, /2 al azul)");
@@ -131,59 +114,44 @@ public class TrabajoColdwar {
         System.out.println("    5. Gigante gaseoso (400 vidas, empieza con 10 misiles +10/ronda)");
         System.out.println("    6. Planeta enano   (100 vidas, 50% de esquive)");
 
-        String tipo    = "";
         boolean valido = false;
+        Planeta nuevo  = null;
 
         while (!valido) {
             System.out.print("  Tipo: ");
             int eleccion = leerNumero(sc);
 
-            if      (eleccion == 1) { tipo = "normal";  valido = true; }
-            else if (eleccion == 2) { tipo = "rojo";    valido = true; }
-            else if (eleccion == 3) { tipo = "azul";    valido = true; }
-            else if (eleccion == 4) { tipo = "verde";   valido = true; }
-            else if (eleccion == 5) { tipo = "gaseoso"; valido = true; }
-            else if (eleccion == 6) { tipo = "enano";   valido = true; }
-            else {
-                System.out.println("  [!] Opcion no valida. Elige un numero entre 1 y 6.");
-            }
+            if      (eleccion == 1) { nuevo = new PlanetaNormal(nombre, "normal");    valido = true; }
+            else if (eleccion == 2) { nuevo = new PlanetaNormal(nombre, "rojo");      valido = true; }
+            else if (eleccion == 3) { nuevo = new PlanetaNormal(nombre, "azul");      valido = true; }
+            else if (eleccion == 4) { nuevo = new PlanetaNormal(nombre, "verde");     valido = true; }
+            else if (eleccion == 5) { nuevo = new PlanetaEspecial(nombre, "gaseoso"); valido = true; }
+            else if (eleccion == 6) { nuevo = new PlanetaEspecial(nombre, "enano");   valido = true; }
         }
 
-        return tipo;
+        return nuevo;
     }
 
     // ─────────────────────────────────────────────
     //  Historial de ganadores
     // ─────────────────────────────────────────────
 
-    /**
-     * Guarda el nombre del ganador de una partida al final del fichero
-     * {@value #FICHERO_GANADORES}, creándolo si no existe.
-     * <p>
-     * Solo debe llamarse cuando haya exactamente un ganador; en caso de empate
-     * no se invoca este método y no se escribe nada.
-     * </p>
-     *
-     * @param nombreGanador nombre del planeta ganador
-     */
-    public static void guardarGanador(String nombreGanador) {
+    public static void guardarGanador(String nombreGanador, String identificador) {
         File fichero = new File(FICHERO_GANADORES);
+        boolean existia = fichero.exists();
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero, true))) {
-            bw.write(nombreGanador);
+            if (!existia) {
+                bw.write("Nombre de planetas ganadores - Identificador");
+                bw.newLine();
+            }
+            bw.write(nombreGanador + " - " + identificador);
             bw.newLine();
         } catch (IOException e) {
             System.out.println("  [!] No se pudo guardar el ganador: " + e.getMessage());
         }
     }
 
-    /**
-     * Lee el fichero {@value #FICHERO_GANADORES} y muestra por pantalla
-     * el historial completo de ganadores de todas las partidas disputadas.
-     * <p>
-     * Si el fichero no existe o está vacío, informa al usuario en consecuencia.
-     * Los empates nunca se guardan, por lo que solo aparecen nombres de ganadores reales.
-     * </p>
-     */
     public static void mostrarGanadores() {
         File fichero = new File(FICHERO_GANADORES);
 
@@ -226,30 +194,12 @@ public class TrabajoColdwar {
     //  Lógica del juego
     // ─────────────────────────────────────────────
 
-    /**
-     * Gestiona el flujo completo de una partida.
-     * <p>
-     * Solicita el número de equipos, sus nombres y sus tipos de planeta.
-     * Ejecuta las rondas en bucle y, al terminar, anuncia al ganador o declara empate.
-     * Si hay un único ganador, su nombre se persiste en {@value #FICHERO_GANADORES}.
-     * En caso de empate no se guarda ningún registro.
-     * </p>
-     * <p>
-     * Si {@code conBonus} es {@code true} (apartado extra), al inicio de cada
-     * ronda par se otorgan 15 misiles extra a un equipo vivo elegido al azar.
-     * </p>
-     *
-     * @param sc       el {@link Scanner} de entrada
-     * @param conBonus {@code true} para activar el bonus aleatorio de misiles
-     */
     public static void jugar(Scanner sc, boolean conBonus) {
-    		
-    		
+
         if (conBonus) {
             System.out.println("\n  [APARTADO EXTRA] Modo con bonus aleatorio de misiles activado.");
         }
 
-        // Número de equipos (mínimo 3)
         System.out.print("\n  Cuantos equipos van a jugar? (minimo 3): ");
         int numPlanetas = leerNumero(sc);
         while (numPlanetas < 3) {
@@ -257,21 +207,17 @@ public class TrabajoColdwar {
             numPlanetas = leerNumero(sc);
         }
 
-        // Creación de planetas
         ArrayList<Planeta> planetas = new ArrayList<>();
 
-//        Recorre los planetas ya creados
         for (int i = 0; i < numPlanetas; i++) {
             String nombre = "";
             boolean repetido = false;
 
             do {
-//            	Introduce nombre del equipo
                 repetido = false;
                 System.out.print("  Nombre del equipo " + (i + 1) + ": ");
                 nombre = sc.next();
 
-                // Comprobar si ya existe
                 for (Planeta p : planetas) {
                     if (p.getNombre().equalsIgnoreCase(nombre)) {
                         repetido = true;
@@ -279,39 +225,45 @@ public class TrabajoColdwar {
                         break;
                     }
                 }
-
             } while (repetido);
 
-            String tipo   = seleccionarTipo(sc);
             
-            } while (repetido);
-
-            // BUCLE PARA EL IDENTIFICADOR 
+            Planeta nuevo = seleccionarTipo(sc, nombre);
+            
+         // BUCLE PARA EL IDENTIFICADOR 
             String id = "";
             boolean idValido = false;
             
             while (!idValido) {
                 System.out.print("  Introduce el identificador (4 números y 3 letras mayúsculas, ej: 1111ABC): ");
                 id = sc.next();
-                
-                // Llamamos a la clase Validaciones
-                if (trabajoColdWar_Utils.Validaciones.validarIdentificador(id)) {
-                    idValido = true;
-                } else {
+
+                if (!trabajoColdwar_Utils.Validaciones.validarIdentificador(id)) {
                     System.out.println("  [!] Error: El identificador es incorrecto. Debe tener 4 números y 3 letras mayúsculas.");
+                } else {
+                    
+                    boolean idRepetido = false;
+                    for (Planeta p : planetas) {
+                        if (p.getIdentificador().equalsIgnoreCase(id)) {
+                            idRepetido = true;
+                            break;
+                        }
+                    }
+
+                    if (idRepetido) {
+                        System.out.println("  [!] Ese identificador ya está en uso, prueba otro.");
+                    } else {
+                        idValido = true;
+                    }
                 }
             }
-
-            String tipo   = seleccionarTipo(sc);
-            Planeta nuevo = new Planeta(nombre, tipo, id); 
+            
+            nuevo.setIdentificador(id);
+            
+            
             planetas.add(nuevo);
             System.out.println("  -> " + nombre + " creado como " + nuevo.getNombreTipo()
-                    + " con " + nuevo.getNombreTipo() + " vidas y "
-                    + nuevo.getMisilesRonda() + " misiles iniciales.");
-        }
-            planetas.add(nuevo);
-            System.out.println("  -> " + nombre + " creado como " + nuevo.getNombreTipo()
-                    + " con " + nuevo.getNombreTipo() + " vidas y "
+                    + " con " + nuevo.getVidas() + " vidas y "
                     + nuevo.getMisilesRonda() + " misiles iniciales.");
         }
 
@@ -320,23 +272,20 @@ public class TrabajoColdwar {
         boolean juegoActivo = true;
 
         while (juegoActivo) {
-        	
-        		String logRonda = "";
+
+            String logRonda = "";
 
             System.out.println("\n  ╔══════════════════════════════╗");
             System.out.println("  ║         RONDA  " + ronda + "              ║");
             System.out.println("  ╚══════════════════════════════╝");
 
-            // Reposición de misiles al inicio de la ronda
             for (Planeta p : planetas) {
                 p.reponerMisiles(ronda);
             }
 
-            // Bonus aleatorio cada 2 rondas (solo modo extra)
             if (conBonus && ronda % 2 == 0) {
                 int idx = random.nextInt(planetas.size());
                 Planeta p = planetas.get(idx);
-
                 if (p.getVidas() > 0) {
                     p.setMisilesRonda(p.getMisilesRonda() + 15);
                     System.out.println("\n  BONUS: el equipo '" + p.getNombre()
@@ -344,15 +293,13 @@ public class TrabajoColdwar {
                 }
             }
 
-            // Turno de cada planeta que siga vivo
             for (Planeta p : planetas) {
                 if (p.getVidas() > 0 || p.isEliminadoEstaRonda()) {
-                		logRonda += jugarTurno(p, planetas, sc, ronda);
+                    logRonda += jugarTurno(p, planetas, sc, ronda);
                     p.setEliminadoEstaRonda(false);
                 }
             }
 
-            // Resumen al final de la ronda
             int vivos = resumenRonda(planetas, ronda, logRonda);
             if (vivos <= 1) {
                 juegoActivo = false;
@@ -360,7 +307,6 @@ public class TrabajoColdwar {
             ronda++;
         }
 
-        // Determinar ganador o empate
         Planeta ganador = null;
         int vivosFinal  = 0;
 
@@ -375,8 +321,7 @@ public class TrabajoColdwar {
         System.out.println("  ╔══════════════════════════════╗");
         if (vivosFinal == 1) {
             System.out.println("  ║  GANADOR: " + ganador.getNombre() + "           ║");
-            // Persistir el ganador; en empate (vivosFinal == 0) no se guarda nada
-            guardarGanador(ganador.getNombre());
+            guardarGanador(ganador.getNombre(), ganador.getIdentificador());
             System.out.println("  ║  (resultado guardado)        ║");
         } else {
             System.out.println("  ║  EMPATE: todos destruidos    ║");
@@ -385,31 +330,12 @@ public class TrabajoColdwar {
         System.out.println("  ╚══════════════════════════════╝");
     }
 
-    /**
-     * Gestiona el turno completo de un planeta atacante.
-     * <p>
-     * El bucle continúa mientras el atacante tenga misiles disponibles.
-     * En cada iteración el jugador elige:
-     * </p>
-     * <ul>
-     *   <li>Un planeta enemigo al que atacar y cuántos misiles usar.</li>
-     *   <li>La opción {@code 0} para convertir todos los misiles restantes
-     *       en puntos de vida (ratio 1 misil → 0,5 vidas), solo disponible
-     *       a partir de la ronda 2.</li>
-     * </ul>
-     *
-     * @param atacante      el {@link Planeta} que realiza el ataque en este turno
-     * @param listaPlanetas array con todos los planetas de la partida
-     * @param sc            el {@link Scanner} de entrada
-     * @param ronda         número de ronda actual (controla disponibilidad de defensa)
-     */
     static String jugarTurno(Planeta atacante, ArrayList<Planeta> listaPlanetas, Scanner sc, int ronda) {
-    	
-    		String logTurno = "";
+
+        String logTurno = "";
 
         while (atacante.getMisilesRonda() > 0) {
 
-            // Cabecera del turno
             System.out.println("\n  ┌──────────────────────────────────────┐");
             System.out.println("  │  TURNO: " + atacante.getNombre()
                     + " (" + atacante.getNombreTipo() + ")");
@@ -417,81 +343,51 @@ public class TrabajoColdwar {
             System.out.println("  │  Vidas: " + atacante.getVidas());
             System.out.println("  └──────────────────────────────────────┘");
 
-            // Mostrar lista de objetivos
             System.out.println("  A que planeta quieres atacar?");
 
-//          lista donde se guardan los índices reales
             ArrayList<Integer> indicesValidos = new ArrayList<>();
-
             int opc = 1;
 
             for (int i = 0; i < listaPlanetas.size(); i++) {
-
                 Planeta p = listaPlanetas.get(i);
-
-                if (p == atacante) {
-                    continue;
-                }
-
-                // Guardamos el índice real
+                if (p == atacante) continue;
                 indicesValidos.add(i);
-
-                String estadoStr;
-
-//              Mostramos de los planetas vivos
-                if (p.getVidas() > 0) {
-                    estadoStr = "(Vidas: " + p.getVidas()
-                            + " | " + p.getNombreTipo() + ")";
-                } else {
-                    estadoStr = "[ELIMINADO]";
-                }
-
-                System.out.println("    " + opc + ". " + p.getNombre()
-                        + " " + estadoStr);
-
+                
+                String estadoStr = p.getVidas() > 0 ? p.getNombreTipo() : "Eliminado";
+                
+                System.out.println("    " + opc + ". " + p.getNombre() + " " + estadoStr);
                 opc++;
             }
 
-//          la defensa se muestra a partir de la ronda 2
             if (ronda > 1) {
                 System.out.println("    0. Convertir misiles restantes en defensa");
             }
 
-            int numObjetivo    = -2;
+            int numObjetivo       = -2;
             boolean objetivoValido = false;
 
             while (!objetivoValido) {
-
                 System.out.print("  Objetivo: ");
                 int eleccion = leerNumero(sc);
 
-//              si pulsa 0 en la primera ronda forzamos opcion no valida
-                if (eleccion == 0 && ronda == 1) {
-                    eleccion = -99;
-                }
+                if (eleccion == 0 && ronda == 1) eleccion = -99;
 
-//              Opcion de defenderse a partir de la ronda 2
                 if (eleccion == 0) {
                     numObjetivo = -1;
                     objetivoValido = true;
-
                 } else if (eleccion >= 1 && eleccion <= indicesValidos.size()) {
-
                     int indiceReal = indicesValidos.get(eleccion - 1);
-
                     if (listaPlanetas.get(indiceReal).getVidas() <= 0) {
                         System.out.println("  [!] Ese planeta ya ha sido eliminado.");
                     } else {
                         numObjetivo = indiceReal;
                         objetivoValido = true;
                     }
-
                 } else {
                     System.out.println("  [!] Opcion no valida.");
                 }
             }
 
-            // Opción defensa
             if (numObjetivo == -1) {
                 int curacion = atacante.getMisilesRonda() / 2;
                 atacante.setVidas(atacante.getVidas() + curacion);
@@ -502,7 +398,6 @@ public class TrabajoColdwar {
                 break;
             }
 
-            // Leer cantidad de misiles para el ataque
             int     misilesAtacar  = 0;
             boolean cantidadValida = false;
             while (!cantidadValida) {
@@ -518,7 +413,6 @@ public class TrabajoColdwar {
                 }
             }
 
-            // Ejecutar el combate y acumular el log
             logTurno += listaPlanetas.get(numObjetivo).combate(misilesAtacar, atacante);
         }
 
@@ -526,13 +420,6 @@ public class TrabajoColdwar {
         return logTurno;
     }
 
-    /**
-     * Imprime el resumen de estado al final de una ronda y cuenta los equipos vivos.
-     *
-     * @param planetas array de planetas participantes
-     * @param ronda    número de la ronda recién terminada
-     * @return número de equipos que siguen con vida
-     */
     public static int resumenRonda(ArrayList<Planeta> planetas, int ronda, String logRonda) {
         System.out.println("\n  ╔══════════════════════════════════════════╗");
         System.out.println("  ║      RESUMEN  RONDA  " + ronda + "                   ║");
@@ -557,7 +444,7 @@ public class TrabajoColdwar {
         System.out.println("  ╠═══════════════════╩══════╩═══════════════╣");
         System.out.println("  ║  Equipos vivos: " + vivos + "                          ║");
         System.out.println("  ╚══════════════════════════════════════════╝");
-        
+
         System.out.println("  ╠═══════════════════════════════════════════╣");
         System.out.println("  ║            ATAQUES DE LA RONDA            ║");
         System.out.println("  ╠═══════════════════════════════════════════╣");
@@ -567,13 +454,6 @@ public class TrabajoColdwar {
         return vivos;
     }
 
-    // ─────────────────────────────────────────────
-    //  Secciones informativas
-    // ─────────────────────────────────────────────
-
-    /**
-     * Imprime las reglas del juego.
-     */
     public static void reglas() {
         System.out.println();
         System.out.println("  ╔═══════════════════════════════════════════════════╗");
@@ -598,16 +478,11 @@ public class TrabajoColdwar {
         System.out.println("  ╚═══════════════════════════════════════════════════╝");
     }
 
-    /**
-     * Guarda la información del juego en un fichero y la muestra por pantalla.
-     * 
-     */
     public static void informacion() {
         File fichero = new File("informacion.txt");
 
-        // Guardar
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fichero))) {
-            bw.write("  Version : 2.0");           bw.newLine();
+            bw.write("  Version : 3.0");           bw.newLine();
             bw.write("  Autores : Miguel Riveiro"); bw.newLine();
             bw.write("  Autores : Rubén González"); bw.newLine();
             bw.write("  Autores : Anxo Negreira");  bw.newLine();
@@ -621,7 +496,6 @@ public class TrabajoColdwar {
             return;
         }
 
-        // Leer e imprimir
         System.out.println();
         System.out.println("  ╔══════════════════════════════════════════╗");
         System.out.println("  ║               INFORMACION                ║");
