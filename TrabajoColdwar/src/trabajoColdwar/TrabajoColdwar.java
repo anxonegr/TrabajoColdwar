@@ -454,42 +454,57 @@ public class TrabajoColdwar {
         return vivos;
     }
 
-public static void eventoAleatorio(ArrayList<Planeta> planetas) {
-Random r = new Random();
-int evento = r.nextInt(3);
+   public static void eventoAleatorio(ArrayList<Planeta> planetas) {
+    Random r = new Random();
+    int evento = r.nextInt(3);
 
-System.out.println("\n EVENTO GALACTICO");
-switch (evento) {
-case 0:
-System.out.println("Tormenta solar: todos los planetas pierden 20 vidas");
-for (Planeta p : planetas) {
-if (p.getVidas() > 0) {
-p.setVidas(p.getVidas() - 20);
+    System.out.println("\n EVENTO GALÁCTICO ");
+
+    switch (evento) {
+
+        case 0:
+            System.out.println("Tormenta solar: todos los planetas pierden 20 vidas");
+
+            for (Planeta p : planetas) {
+                if (p.getVidas() > 0) {
+
+                    int nuevasVidas = p.getVidas() - 20;
+
+                    // Evitar vidas negativas
+                    if (nuevasVidas < 0) {
+                        nuevasVidas = 0;
+                    }
+
+                    p.setVidas(nuevasVidas);
+                }
+            }
+            break;
+
+        case 1:
+            System.out.println("Suministro militar: todos ganan 10 misiles extra");
+
+            for (Planeta p : planetas) {
+                if (p.getVidas() > 0) {
+                    p.setMisilesRonda(p.getMisilesRonda() + 10);
+                }
+            }
+            break;
+
+        case 2:
+            System.out.println("Reparaciones automáticas: todos recuperan 15 vidas");
+
+            for (Planeta p : planetas) {
+                if (p.getVidas() > 0) {
+                    p.setVidas(p.getVidas() + 15);
+                }
+            }
+            break;
+
+        default:
+            System.out.println("No ocurrió ningún evento.");
+            break;
+    }
    }
-}
-break;
-
-case 1:
-System.out.println("Suministro militar: todos ganan 10 misiles extra");
-for (Planeta p : planetas) {
-if (p.getVidas() > 0) {
-p.setMisilesRonda(p.getMisilesRonda() + 10);
-    }
-}
-break;
-
-case 2:
-System.out.println("Reparaciones automáticas: todos recuperan 15 vidas");
-
-for (Planeta p : planetas) {
-if (p.getVidas() > 0) {
-p.setVidas(p.getVidas() + 15);
-    }
-}
-break;
-    }
-
-}
 
     
     public static void reglas() {
