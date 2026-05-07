@@ -283,6 +283,11 @@ public class TrabajoColdwar {
                 p.reponerMisiles(ronda);
             }
 
+            // Evento aleatorio cada 3 rondas
+           if (conBonus && ronda % 3 == 0) {
+                eventoAleatorio(planetas);
+           }
+            
             if (conBonus && ronda % 2 == 0) {
                 int idx = random.nextInt(planetas.size());
                 Planeta p = planetas.get(idx);
