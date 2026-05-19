@@ -208,7 +208,7 @@ public class VentanaReglas extends JFrame {
         lblFlechaIzq = crearFlecha(imgFlechaIzq, 15, 250, -1);
         panelFondo.add(lblFlechaIzq);
 
-        lblFlechaDer = crearFlecha(imgFlechaDer, 855, 250, 1);
+        lblFlechaDer = crearFlecha(imgFlechaDer, 800, 250, 1);
         panelFondo.add(lblFlechaDer);
 
         // Indicador de página
@@ -226,7 +226,7 @@ public class VentanaReglas extends JFrame {
         btnVolver.setBorder(BorderFactory.createLineBorder(new Color(80, 200, 40), 2));
         btnVolver.setFocusPainted(false);
         btnVolver.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnVolver.setBounds(390, 560, 120, 36);
+        btnVolver.setBounds(390, 520, 120, 36);
         btnVolver.addActionListener(e -> dispose());
         panelFondo.add(btnVolver);
     }
