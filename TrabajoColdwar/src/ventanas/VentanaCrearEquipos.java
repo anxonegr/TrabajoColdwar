@@ -117,6 +117,33 @@ public class VentanaCrearEquipos extends JFrame {
             }
         }
 
+        // Comprobar nombres repetidos
+for (int i = 0; i < 6; i++) {
+
+    if (cajasNombres[i].isVisible()) {
+
+        for (int j = i + 1; j < 6; j++) {
+
+            if (cajasNombres[j].isVisible()) {
+
+                String nombre1 = cajasNombres[i].getText().trim();
+                String nombre2 = cajasNombres[j].getText().trim();
+
+                if (nombre1.equalsIgnoreCase(nombre2)) {
+
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "Hay equipos con nombres repetidos",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+
+                    return;
+                }
+            }
+        }
+    }
+}
         JOptionPane.showMessageDialog(
             null,
             "Todo correcto"
