@@ -226,7 +226,7 @@ public class VentanaReglas extends JFrame {
         btnVolver.setBorder(BorderFactory.createLineBorder(new Color(80, 200, 40), 2));
         btnVolver.setFocusPainted(false);
         btnVolver.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnVolver.setBounds(390, 520, 120, 36);
+        btnVolver.setBounds(650, 520, 120, 36);
         btnVolver.addActionListener(e -> dispose());
         panelFondo.add(btnVolver);
     }
