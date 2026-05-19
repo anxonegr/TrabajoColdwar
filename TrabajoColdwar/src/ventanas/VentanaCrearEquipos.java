@@ -78,5 +78,50 @@ public class VentanaCrearEquipos extends JFrame {
                 }
             }
         });
+
+        btnEmpezar.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+
+        for (int i = 0; i < 6; i++) {
+
+            // Solo revisar equipos visibles
+            if (cajasNombres[i].isVisible()) {
+
+                String nombre = cajasNombres[i].getText().trim();
+
+                // Nombre vacío
+                if (nombre.isBlank()) {
+
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "El equipo " + (i + 1) + " no tiene nombre",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+
+                    return;
+                }
+
+                // Nombre muy corto
+                if (nombre.length() < 3) {
+
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "El nombre del equipo " + (i + 1) + " es demasiado corto",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+
+                    return;
+                }
+            }
+        }
+
+        JOptionPane.showMessageDialog(
+            null,
+            "Todo correcto"
+        );
+    }
+});
     }
 }
