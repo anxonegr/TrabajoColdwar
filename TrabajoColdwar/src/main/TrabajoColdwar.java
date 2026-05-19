@@ -432,9 +432,7 @@ public class TrabajoColdwar {
      * Muestra las reglas del juego.
      */
     public static void reglas() {
-        System.out.println("\nCada planeta tiene habilidades distintas.");
-        System.out.println("Gana el último planeta que permanezca con vida.");
-        
+        Mensaje.reglas();
     }
 
    
