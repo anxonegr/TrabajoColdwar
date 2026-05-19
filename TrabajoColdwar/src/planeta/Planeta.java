@@ -166,6 +166,16 @@ public abstract class Planeta implements InterfacePlaneta {
 
         Planeta atacantePlaneta = (Planeta) atacante;
 
+        if (misilesAtacar <= 0) {
+
+    return "ERROR: Debes lanzar al menos 1 misil";
+}
+
+if (misilesAtacar > atacante.getMisilesRonda()) {
+
+    return "ERROR: No tienes tantos misiles";
+}
+        
         int danio = (misilesAtacar * (int) atacantePlaneta.calcularMultiplicador(this));
 
         vidas -= danio;
