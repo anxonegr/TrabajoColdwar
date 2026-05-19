@@ -1,0 +1,114 @@
+package graficos;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class Ranking extends JFrame {
+
+    private JTable tabla;
+    private DefaultTableModel modelo;
+
+    public Ranking() {
+
+        setTitle("RANKING");
+        setSize(800, 600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // Panel principal
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.BLACK);
+
+        // Imagen ranking
+        ImageIcon icono = new ImageIcon("src/imagenes/ranking.png");
+
+        JLabel titulo = new JLabel(icono);
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        titulo.setBorder(BorderFactory.createEmptyBorder(30, 0, 10, 0));
+
+        panel.add(titulo, BorderLayout.NORTH);
+
+        //Tabla
+        modelo = new DefaultTableModel();
+        modelo.addColumn("PLANETA");
+        modelo.addColumn("IDENTIFICADOR");
+
+        tabla = new JTable(modelo);
+
+        tabla.setBackground(Color.WHITE);
+        tabla.setForeground(Color.BLACK);
+
+        tabla.setGridColor(Color.LIGHT_GRAY);
+        tabla.setShowGrid(true);
+        tabla.setFillsViewportHeight(true);
+
+        tabla.getTableHeader().setBackground(Color.ORANGE);
+        tabla.getTableHeader().setForeground(Color.BLACK);
+
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setPreferredSize(new Dimension(400, 250));
+
+        JPanel centro = new JPanel(new GridBagLayout());
+        centro.setBackground(Color.BLACK);
+        centro.add(scroll);
+
+        panel.add(centro, BorderLayout.CENTER);
+
+        //Boton volver
+        ImageIcon iconoFlecha = new ImageIcon(
+                new ImageIcon("src/imagenes/flechaizq.png").getImage().getScaledInstance(124, 70, Image.SCALE_SMOOTH));
+
+        JButton volver = new JButton(iconoFlecha);
+        volver.setContentAreaFilled(false);
+        volver.setBorderPainted(false);
+        volver.setFocusPainted(false);
+        volver.setOpaque(false);
+
+        volver.addActionListener(e -> dispose());
+
+        JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelBoton.setBackground(Color.BLACK);
+        panelBoton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 20));
+
+        panelBoton.add(volver);
+
+        panel.add(panelBoton, BorderLayout.SOUTH);
+        
+
+        add(panel);
+
+        cargarGanadores();
+    }
+
+    // Cargar archivo
+    private void cargarGanadores() {
+
+        String ruta = "src/fichero/ganadores.txt";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+
+            String linea;
+
+            while ((linea = br.readLine()) != null) {
+
+                String[] partes = linea.split(" - ");
+
+                if (partes.length == 2) {
+                    modelo.addRow(new Object[]{
+                            partes[0],
+                            partes[1]
+                    });
+                }
+            }
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar ranking");
+        }
+    }
+}
