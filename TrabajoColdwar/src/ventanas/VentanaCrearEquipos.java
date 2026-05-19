@@ -114,7 +114,20 @@ public class VentanaCrearEquipos extends JFrame {
 
                     return;
                 }
+            if (nombre.length() > 15) {
+
+    JOptionPane.showMessageDialog(
+        null,
+        "El nombre es demasiado largo",
+        "Error",
+        JOptionPane.ERROR_MESSAGE
+    );
+
+    return;
             }
+            
+            }
+            
         }
 
         // Comprobar nombres repetidos
