@@ -20,9 +20,20 @@ public class Ranking extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Panel principal
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.BLACK);
+        // panel con fondo
+        JPanel panel = new JPanel(new BorderLayout()) {
+
+            Image fondo = new ImageIcon("src/imagenes/fondo.png").getImage();
+
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                g.drawImage(fondo, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+
+        // los paneles encima del fondo tienen que ser transparentes
+        panel.setOpaque(false);
 
         // Imagen ranking
         ImageIcon icono = new ImageIcon("src/imagenes/ranking.png");
@@ -33,7 +44,7 @@ public class Ranking extends JFrame {
 
         panel.add(titulo, BorderLayout.NORTH);
 
-        //Tabla
+        // Tabla
         modelo = new DefaultTableModel();
         modelo.addColumn("PLANETA");
         modelo.addColumn("IDENTIFICADOR");
@@ -43,26 +54,26 @@ public class Ranking extends JFrame {
         tabla.setBackground(Color.WHITE);
         tabla.setForeground(Color.BLACK);
 
-        tabla.setGridColor(Color.LIGHT_GRAY);
-        tabla.setShowGrid(true);
-        tabla.setFillsViewportHeight(true);
-
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setPreferredSize(new Dimension(400, 250));
+        
+        tabla.getTableHeader().setOpaque(true);
         tabla.getTableHeader().setBackground(Color.ORANGE);
         tabla.getTableHeader().setForeground(Color.BLACK);
 
-        JScrollPane scroll = new JScrollPane(tabla);
-        scroll.getViewport().setBackground(Color.WHITE);
-        scroll.setPreferredSize(new Dimension(400, 250));
-
+        // CENTRO TRANSPARENTE
         JPanel centro = new JPanel(new GridBagLayout());
-        centro.setBackground(Color.BLACK);
+        centro.setOpaque(false);
+
         centro.add(scroll);
 
         panel.add(centro, BorderLayout.CENTER);
 
-        //Boton volver
+        // Botón volver
         ImageIcon iconoFlecha = new ImageIcon(
-                new ImageIcon("src/imagenes/flechaizq.png").getImage().getScaledInstance(124, 70, Image.SCALE_SMOOTH));
+                new ImageIcon("src/imagenes/flechaizq.png")
+                        .getImage()
+                        .getScaledInstance(124, 70, Image.SCALE_SMOOTH));
 
         JButton volver = new JButton(iconoFlecha);
         volver.setContentAreaFilled(false);
@@ -73,13 +84,11 @@ public class Ranking extends JFrame {
         volver.addActionListener(e -> dispose());
 
         JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelBoton.setBackground(Color.BLACK);
-        panelBoton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 20));
+        panelBoton.setOpaque(false);
 
         panelBoton.add(volver);
 
         panel.add(panelBoton, BorderLayout.SOUTH);
-        
 
         add(panel);
 
