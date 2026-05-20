@@ -1,5 +1,6 @@
 package main;
 
+import ventanas.VentanaCrearEquipos;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -37,6 +38,14 @@ public class TrabajoColdwar {
      * @param args argumentos de línea de comandos
      */
     public static void main(String[] args) {
+        
+        //arrancar ventana crear equipos:
+        VentanaCrearEquipos miVentana = new VentanaCrearEquipos();
+        miVentana.setVisible(true);
+        
+    }
+	
+	public static void main(String[] args) {
 
     	
         boolean salir = false;
