@@ -88,9 +88,7 @@ public class mainFrame extends JFrame {
         btnReglas.setOpaque(false);
 
         btnReglas.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null,
-                    "Cada personaje tiene habilidades distintas.\n"
-                            + "Gana el último planeta con vida.");
+            new VentanaReglas();
         });
         add(btnReglas);
 
@@ -124,6 +122,7 @@ public class mainFrame extends JFrame {
         btnBonus.setOpaque(false);
 
         btnBonus.addActionListener(e -> {
+            new VentanaCreditos();
             JOptionPane.showMessageDialog(null, "");
             // TrabajoColdwar.jugar(true);
         });
@@ -142,7 +141,7 @@ public class mainFrame extends JFrame {
         btnGanadores.setOpaque(false);
 
         btnGanadores.addActionListener(e -> {
-            // fichero.Fichero.mostrarGanadores();
+            new VentanaRanking();
             JOptionPane.showMessageDialog(null, "Mostrando ranking...");
         });
         add(btnGanadores);
