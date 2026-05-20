@@ -23,7 +23,7 @@ public class Ranking extends JFrame {
         // panel con fondo
         JPanel panel = new JPanel(new BorderLayout()) {
 
-            Image fondo = new ImageIcon("src/imagenes/fondo.png").getImage();
+            Image fondo = new ImageIcon("recurso/fondo.png").getImage();
 
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -36,7 +36,7 @@ public class Ranking extends JFrame {
         panel.setOpaque(false);
 
         // Imagen ranking
-        ImageIcon icono = new ImageIcon("src/imagenes/ranking.png");
+        ImageIcon icono = new ImageIcon("recurso/ranking.png");
 
         JLabel titulo = new JLabel(icono);
         titulo.setHorizontalAlignment(SwingConstants.CENTER);
@@ -71,7 +71,7 @@ public class Ranking extends JFrame {
 
         // Botón volver
         ImageIcon iconoFlecha = new ImageIcon(
-                new ImageIcon("src/imagenes/flechaizq.png")
+                new ImageIcon("recurso/flechaizq.png")
                         .getImage()
                         .getScaledInstance(124, 70, Image.SCALE_SMOOTH));
 
