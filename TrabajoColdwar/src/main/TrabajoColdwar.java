@@ -43,11 +43,6 @@ public class TrabajoColdwar {
         VentanaCrearEquipos miVentana = new VentanaCrearEquipos();
         miVentana.setVisible(true);
         
-    }
-	
-	public static void main(String[] args) {
-
-    	
         boolean salir = false;
 
         do {
@@ -84,19 +79,18 @@ public class TrabajoColdwar {
     /**
      * Lee un número entero controlando errores de entrada.
      *
-     * @param sc scanner de entrada
      * @return número introducido
      */
     public static int leerNumero() {
-    	
+        
         while (true) {
-        	
+            
             try {
-            	
+                
                 return sc.nextInt();
                 
             } catch (InputMismatchException e) {
-            	
+                
                 System.out.print("  Entrada no válida. Introduce un número: ");
                 sc.next();
                 
@@ -107,7 +101,6 @@ public class TrabajoColdwar {
     /**
      * Muestra el menú principal.
      *
-     * @param sc scanner de entrada
      * @return opción seleccionada
      */
     public static int menu() {
@@ -119,16 +112,15 @@ public class TrabajoColdwar {
     /**
      * Crea un planeta según el tipo seleccionado.
      *
-     * @param sc scanner de entrada
      * @param nombre nombre del planeta
      * @return planeta creado
      */
     public static Planeta seleccionarTipo(String nombre) {
-    	
+        
         Mensaje.menuTipo();
 
         while (true) {
-        	
+            
             System.out.print("  Tipo: ");
             int eleccion = leerNumero();
 
@@ -157,23 +149,22 @@ public class TrabajoColdwar {
     /**
      * Ejecuta una partida completa.
      *
-     * @param sc scanner de entrada
      * @param conBonus indica si se activa el modo bonus
      */
     public static void jugar(boolean conBonus) {
-    	
-    	int numPlanetas = 0;
-    	ArrayList<Planeta> planetas = new ArrayList<>();
-    	ArrayList<String> nombres = new ArrayList<>();
-    	ArrayList<String> ids = new ArrayList<>();
-    	
-    	//pedimos equipos
+        
+        int numPlanetas = 0;
+        ArrayList<Planeta> planetas = new ArrayList<>();
+        ArrayList<String> nombres = new ArrayList<>();
+        ArrayList<String> ids = new ArrayList<>();
+        
+        //pedimos equipos
         System.out.print("\n¿Cuántos equipos van a jugar? (mínimo 3): ");
         numPlanetas = leerNumero();
         
         //si el numero de planetas es menor de tres se vuelve a pedir
         while (numPlanetas < 3) {
-        	
+            
             System.out.print("Debe haber al menos 3 equipos: ");
             numPlanetas = leerNumero();
             
@@ -181,24 +172,24 @@ public class TrabajoColdwar {
 
         //pedimos equipos
         for (int i = 0; i < numPlanetas; i++) {
-        	
-        	String id = "";
-        	String nombre = "";
-        	boolean repetido = false;
-        	
-        	//pedimos nombre y comprobamos que no este repetido
-        	do {
-        		
-	            System.out.print("Nombre del equipo " + (i + 1) + ": ");
-	            nombre = sc.next();
-	            
-	            if(nombre.contains(nombre)) {
-	            	
-	            	System.out.println("Nombre repetido");
-	            }
-        	}while(nombres.contains(nombre));
-        	
-        	//añadimos a la lista para poder comprobar
+            
+            String id = "";
+            String nombre = "";
+            boolean repetido = false;
+            
+            //pedimos nombre y comprobamos que no este repetido
+            do {
+                
+                System.out.print("Nombre del equipo " + (i + 1) + ": ");
+                nombre = sc.next();
+                
+                if(nombre.contains(nombre)) {
+                    
+                    System.out.println("Nombre repetido");
+                }
+            }while(nombres.contains(nombre));
+            
+            //añadimos a la lista para poder comprobar
             nombres.add(nombre);
 
             //pedimos tipo de planeta
@@ -206,23 +197,23 @@ public class TrabajoColdwar {
 
             //pedimos y comprobamos el identificador
             do {
-            	
-            	
-	            System.out.print("Identificador (ej. 1234ABC): ");
-	            id = sc.next();
-	            
-	            repetido = !Validaciones.validarIdentificador(id);
-	            
-	            if(ids.contains(id)) {
-	            	
-	            	System.out.println("Id repetido");
-	            	
-	            }else if(repetido) {
-	            	
-	            	System.out.println("patron no valido");
-	            	
-	            }
-	            
+                
+                
+                System.out.print("Identificador (ej. 1234ABC): ");
+                id = sc.next();
+                
+                repetido = !Validaciones.validarIdentificador(id);
+                
+                if(ids.contains(id)) {
+                    
+                    System.out.println("Id repetido");
+                    
+                }else if(repetido) {
+                    
+                    System.out.println("patron no valido");
+                    
+                }
+                
             }while(ids.contains(id) || repetido);
             
             //anhadimos a la lista para poder comprobar
@@ -246,21 +237,21 @@ public class TrabajoColdwar {
 
         
         while (juegoActivo) {
-        	
+            
             String logRonda = "";
 
             System.out.println("\n===== RONDA " + ++ronda + " =====");
             
             
             if (conBonus && ronda % 2 == 0) {
-            	
-            	//hacemos referencia a un planeta aleatorio entre los planetas que estan jugando 
+                
+                //hacemos referencia a un planeta aleatorio entre los planetas que estan jugando 
                 Planeta p = planetas.get(random.nextInt(planetas.size()));
                 
                 
                 if (p.getVidas() > 0) {
-                	
-                	//le damos un bonus de 15 misiles
+                    
+                    //le damos un bonus de 15 misiles
                     p.setMisilesRonda(p.getMisilesRonda() + 15);
                     
                     //informamos al usuario
@@ -285,7 +276,7 @@ public class TrabajoColdwar {
             int vivos = resumenRonda(planetas, ronda, logRonda);
 
             if (vivos <= 1) {
-            	
+                
                 juegoActivo = false;
                 
             }
@@ -298,9 +289,9 @@ public class TrabajoColdwar {
         
         //comprobamos el planeta que tiene vidas y le asignamos el plantata ganador
         for (Planeta p : planetas) {
-        	
+            
             if (p.getVidas() > 0) {
-            	
+                
                 ganador = p;
                 vivosFinal++;
                 
@@ -319,9 +310,9 @@ public class TrabajoColdwar {
         
      // Mostrar misiles esquivados de planetas enanos        
         for (Planeta p : planetas) {
-        	
+            
             if (p instanceof PlanetaEnano) {
-            	
+                
                 PlanetaEnano enano = (PlanetaEnano) p;
                 System.out.println(
                     enano.getNombre()
@@ -339,7 +330,6 @@ public class TrabajoColdwar {
      *
      * @param atacante planeta que ataca
      * @param listaPlanetas lista de planetas
-     * @param sc scanner de entrada
      * @param ronda número de ronda
      * @return log del turno
      */
@@ -418,14 +408,14 @@ public class TrabajoColdwar {
         int vivos = 0;
 
         for (Planeta p : planetas) {
-        		System.out.println(p.getNombre() + " - "
-        	        + p.getVidas() + " vidas - "
-        	        + (p.getVidas() > 0
-        	        ? Planeta.nombreTipo(p)
-        	        : "Eliminado"));
+                System.out.println(p.getNombre() + " - "
+                    + p.getVidas() + " vidas - "
+                    + (p.getVidas() > 0
+                    ? Planeta.nombreTipo(p)
+                    : "Eliminado"));
 
             if (p.getVidas() > 0) {
-            	
+                
                 vivos++;
                 
             }
@@ -446,4 +436,3 @@ public class TrabajoColdwar {
 
    
 }
-
