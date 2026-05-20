@@ -1,176 +1,116 @@
 package ventanas;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Image;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class mainFrame extends JFrame {
 
-    private JButton btnJugar;
-    private JButton btnReglas;
-    private JButton btnInfo;
-    private JButton btnBonus;
-    private JButton btnGanadores;
-    private JButton btnSalir;
-    private JLabel fondo;
+    private static final long serialVersionUID = 1L;
+    private JLabel fondoPanel;
 
     public mainFrame() {
-        // CONFIGURACIÓN VENTANA
         setTitle("ColdWar");
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(null); // Diseño libre
+        setLayout(null);
 
-        // 1. Creamos y añadimos primero los elementos que van ARRIBA
-        crearTitulo();
-        crearBotones();
-        
-        // 2. Creamos y añadimos el fondo AL FINAL
-        crearFondo();
-
+        mostrarMenuPrincipal();
         setVisible(true);
     }
 
-    // =========================
-    // TITULO (Directo al JFrame)
-    // =========================
-    public void crearTitulo() {
-        JLabel titulo = new JLabel("");
-        titulo.setBounds(400, 600, 500, 60);
-        titulo.setForeground(Color.WHITE);
-        titulo.setFont(new Font("Arial", Font.BOLD, 40));
-        titulo.setHorizontalAlignment(SwingConstants.CENTER);
-        add(titulo); // Añadido directamente al frame
+    // ── Menú principal ────────────────────────────────────────────────────────
+    public void mostrarMenuPrincipal() {
+        getContentPane().removeAll();
+
+        Image img = new ImageIcon("recurso/fondo_inicio.png")
+                        .getImage().getScaledInstance(900, 600, Image.SCALE_SMOOTH);
+        fondoPanel = new JLabel(new ImageIcon(img));
+        fondoPanel.setBounds(0, 0, 900, 600);
+        fondoPanel.setLayout(null);
+        add(fondoPanel);
+
+        agregarBoton("recurso/jugar.png",    325, 170, e -> mostrarCrearEquipos());
+        agregarBoton("recurso/reglas.png",   325, 220, e -> mostrarReglas());
+        agregarBoton("recurso/creditos.png", 325, 270, e -> new VentanaCreditos());
+        agregarBoton("recurso/ranking.png",  325, 310, e -> mostrarRanking());
+        agregarBoton("recurso/salir.png",    325, 380, e -> System.exit(0));
+        
+     // ── Botón música ──────────────────────────────────────────────────────────
+        ImageIcon iconoMusica      = new ImageIcon("recurso/musica.png");
+        ImageIcon iconoMusicaMuted = new ImageIcon("recurso/musicamuted.png");
+
+        Image imgMusica = iconoMusica.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+        Image imgMuted  = iconoMusicaMuted.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH);
+
+        JButton btnMusica = new JButton(new ImageIcon(imgMusica));
+        btnMusica.setBounds(5, 55, 50, 50);
+        btnMusica.setBorderPainted(false);
+        btnMusica.setContentAreaFilled(false);
+        btnMusica.setFocusPainted(false);
+        btnMusica.setOpaque(false);
+
+        // Guardamos el estado en un array de 1 elemento para poder usarlo dentro del lambda
+        boolean[] muteado = {false};
+
+        btnMusica.addActionListener(e -> {
+            muteado[0] = !muteado[0];
+            if (muteado[0]) {
+                btnMusica.setIcon(new ImageIcon(imgMuted));
+            } else {
+                btnMusica.setIcon(new ImageIcon(imgMusica));
+            }
+        });
+
+        fondoPanel.add(btnMusica);
+        
+        revalidate();
+        repaint();
     }
 
-    // =========================
-    // BOTONES (Directos al JFrame)
-    // =========================
-    public void crearBotones() {
-
-        // BOTÓN JUGAR
-        btnJugar = new JButton();
-        btnJugar.setBounds(325, 170, 250, 45);
-        // Corregida la ruta a una relativa estándar
-        ImageIcon imgJugar = new ImageIcon("recurso/jugar.png");
-        Image imgJugarEscalada = imgJugar.getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
-        btnJugar.setIcon(new ImageIcon(imgJugarEscalada));
-
-        btnJugar.setBorderPainted(false);
-        btnJugar.setContentAreaFilled(false);
-        btnJugar.setFocusPainted(false);
-        btnJugar.setOpaque(false);
-
-        btnJugar.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Iniciando partida...");
-            // TrabajoColdwar.jugar(false); // Descomenta en tu proyecto
-        });
-        add(btnJugar); 
-
-        // BOTÓN REGLAS
-        btnReglas = new JButton();
-        btnReglas.setBounds(325, 220, 250, 45);
-        ImageIcon imgReglas = new ImageIcon("recurso/reglas.png");
-        Image imgReglasEscalada = imgReglas.getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
-        btnReglas.setIcon(new ImageIcon(imgReglasEscalada));
-
-        btnReglas.setBorderPainted(false);
-        btnReglas.setContentAreaFilled(false);
-        btnReglas.setFocusPainted(false);
-        btnReglas.setOpaque(false);
-
-        btnReglas.addActionListener(e -> {
-            new VentanaReglas();
-        });
-        add(btnReglas);
-
-        // BOTÓN INFORMACIÓN
-        btnInfo = new JButton();
-        btnInfo.setBounds(325, 290, 250, 45);
-        ImageIcon imgInfo = new ImageIcon(""); // Revisa si querías 'info.png' aquí
-        Image imgInfoEscalada = imgInfo.getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
-        btnInfo.setIcon(new ImageIcon(imgInfoEscalada));
-
-        btnInfo.setBorderPainted(false);
-        btnInfo.setContentAreaFilled(false);
-        btnInfo.setFocusPainted(false);
-        btnInfo.setOpaque(false);
-
-        btnInfo.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "");
-        });
-        add(btnInfo);
-
-        // BOTÓN Creditos
-        btnBonus = new JButton();
-        btnBonus.setBounds(325, 270, 250, 45);
-        ImageIcon imgBonus = new ImageIcon("recurso/creditos.png"); 
-        Image imgBonusEscalada = imgBonus.getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
-        btnBonus.setIcon(new ImageIcon(imgBonusEscalada));
-
-        btnBonus.setBorderPainted(false);
-        btnBonus.setContentAreaFilled(false);
-        btnBonus.setFocusPainted(false);
-        btnBonus.setOpaque(false);
-
-        btnBonus.addActionListener(e -> {
-            new VentanaCreditos();
-            JOptionPane.showMessageDialog(null, "");
-            // TrabajoColdwar.jugar(true);
-        });
-        add(btnBonus);
-
-        // BOTÓN GANADORES
-        btnGanadores = new JButton();
-        btnGanadores.setBounds(325, 310, 250, 45);
-        ImageIcon imgGanadores = new ImageIcon("recurso/ranking.png");
-        Image imgGanadoresEscalada = imgGanadores.getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
-        btnGanadores.setIcon(new ImageIcon(imgGanadoresEscalada));
-
-        btnGanadores.setBorderPainted(false);
-        btnGanadores.setContentAreaFilled(false);
-        btnGanadores.setFocusPainted(false);
-        btnGanadores.setOpaque(false);
-
-        btnGanadores.addActionListener(e -> {
-            new VentanaRanking();
-            JOptionPane.showMessageDialog(null, "Mostrando ranking...");
-        });
-        add(btnGanadores);
-
-        // BOTÓN SALIR
-        btnSalir = new JButton();
-        btnSalir.setBounds(325, 380, 250, 45);
-        ImageIcon imgSalir = new ImageIcon("recurso/salir.png");
-        Image imgSalirEscalada = imgSalir.getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
-        btnSalir.setIcon(new ImageIcon(imgSalirEscalada));
-
-        btnSalir.setBorderPainted(false);
-        btnSalir.setContentAreaFilled(false);
-        btnSalir.setFocusPainted(false);
-        btnSalir.setOpaque(false);
-
-        btnSalir.addActionListener(e -> System.exit(0));
-        add(btnSalir);
+    public void mostrarRanking() {
+        getContentPane().removeAll();
+        VentanaRanking panel = new VentanaRanking(this);
+        panel.setBounds(0, 0, 900, 600);
+        add(panel);
+        revalidate();
+        repaint();
     }
 
-    // =========================
-    // FONDO (Se añade el último para quedar atrás)
-    // =========================
-    public void crearFondo() {
-        ImageIcon imagen = new ImageIcon("recurso/Fondo_Final.png");
-        Image img = imagen.getImage().getScaledInstance(900, 600, Image.SCALE_SMOOTH);
-        fondo = new JLabel(new ImageIcon(img));
-        fondo.setBounds(0, 0, 900, 600);
-        add(fondo); // Al ser el último add, se dibuja por debajo de los botones
+    // ── Pantalla Crear Equipos ────────────────────────────────────────────────
+    public void mostrarCrearEquipos() {
+        getContentPane().removeAll();
+
+        // VentanaCrearEquipos pinta su propio fondo en paintComponent
+        VentanaCrearEquipos panel = new VentanaCrearEquipos(this);
+        panel.setBounds(0, 0, 900, 600);
+        add(panel);
+
+        revalidate();
+        repaint();
+    }
+    
+    public void mostrarReglas() {
+        getContentPane().removeAll();
+        VentanaReglas panel = new VentanaReglas(this);
+        panel.setBounds(0, 0, 900, 600);
+        add(panel);
+        revalidate();
+        repaint();
+    }
+
+    // ── Helper botón imagen ───────────────────────────────────────────────────
+    private void agregarBoton(String ruta, int x, int y, java.awt.event.ActionListener accion) {
+        JButton btn = new JButton();
+        btn.setBounds(x, y, 250, 45);
+        Image imgEsc = new ImageIcon(ruta).getImage().getScaledInstance(250, 45, Image.SCALE_SMOOTH);
+        btn.setIcon(new ImageIcon(imgEsc));
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setFocusPainted(false);
+        btn.setOpaque(false);
+        btn.addActionListener(accion);
+        fondoPanel.add(btn);
     }
 
     public static void main(String[] args) {

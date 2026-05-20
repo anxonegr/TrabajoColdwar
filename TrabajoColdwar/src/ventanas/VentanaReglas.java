@@ -3,15 +3,16 @@ package ventanas;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.URL;
 
-public class VentanaReglas extends JFrame {
+public class VentanaReglas extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
+    private JFrame ventanaPadre;
+
     private static final String[][] PAGINAS = {
         {
-            "☢  LA GUERRA GALÁCTICA",
+            " LA GUERRA GALÁCTICA",
             "La galaxia está en guerra.",
             "Seis equipos de lo más variopinto se disputan",
             "el control del universo a base de misiles.",
@@ -23,7 +24,7 @@ public class VentanaReglas extends JFrame {
             "El resto... al vacío espacial."
         },
         {
-            "⚔  CÓMO SE JUEGA",
+            " CÓMO SE JUEGA",
             "1. Cada ronda todos los planetas reciben misiles",
             "   según su tipo.",
             "",
@@ -37,7 +38,7 @@ public class VentanaReglas extends JFrame {
             "5. Gana el último planeta con vida."
         },
         {
-            "🔺  TRIÁNGULO DE VENTAJAS",
+            " TRIÁNGULO DE VENTAJAS",
             "ROJO  ──x2──►  VERDE  ──x2──►  AZUL",
             "  ▲                                │",
             "  └──────────────x2────────────────┘",
@@ -45,12 +46,12 @@ public class VentanaReglas extends JFrame {
             "Atacar en sentido contrario hace /2 de daño.",
             "Normal, Gaseoso y Enano no tienen ventajas (x1).",
             "",
-            "★  MODO CHAOS (opción 4 del menú)",
+            " MODO CHAOS (opción 4 del menú)",
             "Cada 2 rondas, un planeta aleatorio recibe",
             "+15 misiles extra. ¡Puede cambiar todo!"
         },
         {
-            "★  LOS CONTENDIENTES  (1/2)",
+            " LOS CONTENDIENTES  (1/2)",
             "NOBITA  →  Planeta Enano  (100♥ | 50% esquive)",
             "Tan torpe que los misiles le fallan uno de cada dos.",
             "El azar es su único aliado.",
@@ -64,7 +65,7 @@ public class VentanaReglas extends JFrame {
             "Mmm... misiles."
         },
         {
-            "★  LOS CONTENDIENTES  (2/2)",
+            " LOS CONTENDIENTES  (2/2)",
             "PETER GRIFFIN  →  Planeta Rojo  (200♥ | x2 vs Verde)",
             "Sin estrategia, sin filtros y con mucha potencia.",
             "Frente a los Azules, que alguien lo ayude.",
@@ -78,7 +79,7 @@ public class VentanaReglas extends JFrame {
             "Lo que ves es lo que hay."
         },
         {
-            "🪪  IDENTIFICADOR DE EQUIPO",
+            " IDENTIFICADOR DE EQUIPO",
             "Formato obligatorio:",
             "  4 números  +  3 letras mayúsculas",
             "",
@@ -96,16 +97,11 @@ public class VentanaReglas extends JFrame {
 
     private int paginaActual = 0;
 
-    private ImageIcon imgFondo;
-    private ImageIcon imgTitulo;
-    private ImageIcon imgFlechaIzq;
-    private ImageIcon imgFlechaDer;
-
     private JLabel lblFlechaIzq;
     private JLabel lblFlechaDer;
     private JLabel lblIndicador;
     private JTextArea areaContenido;
-    private JPanel panelFondo;
+    private JLabel lblTitPag;
 
     private static final Color COLOR_PANEL   = new Color(0, 0, 0, 160);
     private static final Color COLOR_TITULO  = new Color(60, 180, 30);
@@ -115,64 +111,31 @@ public class VentanaReglas extends JFrame {
     private static final Font  FUENTE_TEXTO  = new Font("Monospaced", Font.PLAIN, 15);
     private static final Font  FUENTE_INDIC  = new Font("Arial", Font.BOLD, 14);
 
-    public VentanaReglas() {
-        super("ColdWar — Reglas");
-        cargarImagenes();
-        inicializarVentana();
+    public VentanaReglas(JFrame padre) {
+        this.ventanaPadre = padre;
+        setLayout(null);
+        setBounds(0, 0, 900, 600);
+        setOpaque(false);
+
         construirUI();
         actualizarPagina();
-        setVisible(true);
     }
 
-    private void cargarImagenes() {
-        imgFondo     = cargarIcono("recurso/fondo.png");
-        imgTitulo    = cargarIcono("recurso/reglas.png");
-        imgFlechaIzq = cargarIcono("recurso/flechaizq.png");
-        imgFlechaDer = cargarIcono("recurso/flechader.png");
-    }
-
-    private ImageIcon cargarIcono(String ruta) {
-        URL url = getClass().getClassLoader().getResource(ruta);
-        if (url != null) return new ImageIcon(url);
-        return new ImageIcon(ruta);
-    }
-
-    private void inicializarVentana() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(900, 620);
-        setLocationRelativeTo(null);
-        setResizable(false);
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(new ImageIcon("recurso/fondo.png").getImage(), 0, 0, 900, 600, this);
     }
 
     private void construirUI() {
-        panelFondo = new JPanel(null) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (imgFondo != null && imgFondo.getIconWidth() > 0) {
-                    g.drawImage(imgFondo.getImage(), 0, 0, getWidth(), getHeight(), this);
-                } else {
-                    g.setColor(new Color(60, 120, 20));
-                    g.fillRect(0, 0, getWidth(), getHeight());
-                }
-            }
-        };
-        setContentPane(panelFondo);
+        // Título
+        Image imgTitulo = new ImageIcon("recurso/reglas.png")
+                              .getImage().getScaledInstance(320, 100, Image.SCALE_SMOOTH);
+        JLabel lblTitulo = new JLabel(new ImageIcon(imgTitulo));
+        lblTitulo.setBounds(290, 5, 320, 100);
+        add(lblTitulo);
 
-        // Título (imagen "Reglas")
-        JLabel lblTitulo = new JLabel();
-        if (imgTitulo != null && imgTitulo.getIconWidth() > 0) {
-            Image img = imgTitulo.getImage().getScaledInstance(320, 100, Image.SCALE_SMOOTH);
-            lblTitulo.setIcon(new ImageIcon(img));
-        } else {
-            lblTitulo.setText("REGLAS");
-            lblTitulo.setFont(FUENTE_TITULO);
-            lblTitulo.setForeground(COLOR_TITULO);
-        }
-        lblTitulo.setBounds(290, 10, 320, 100);
-        panelFondo.add(lblTitulo);
-
-        // Panel de contenido semitransparente
+        // Panel semitransparente de contenido
         JPanel panelContenido = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -184,10 +147,10 @@ public class VentanaReglas extends JFrame {
             }
         };
         panelContenido.setOpaque(false);
-        panelContenido.setBounds(100, 115, 700, 390);
-        panelFondo.add(panelContenido);
+        panelContenido.setBounds(100, 110, 700, 390);
+        add(panelContenido);
 
-        JLabel lblTitPag = new JLabel("", SwingConstants.CENTER);
+        lblTitPag = new JLabel("", SwingConstants.CENTER);
         lblTitPag.setFont(FUENTE_TITULO);
         lblTitPag.setForeground(COLOR_TITULO);
         lblTitPag.setBorder(BorderFactory.createEmptyBorder(12, 10, 6, 10));
@@ -202,49 +165,46 @@ public class VentanaReglas extends JFrame {
         areaContenido.setLineWrap(false);
         areaContenido.setBorder(BorderFactory.createEmptyBorder(6, 24, 10, 24));
         panelContenido.add(areaContenido, BorderLayout.CENTER);
-        panelContenido.putClientProperty("tituloPag", lblTitPag);
 
         // Flechas
-        lblFlechaIzq = crearFlecha(imgFlechaIzq, 15, 250, -1);
-        panelFondo.add(lblFlechaIzq);
+        lblFlechaIzq = crearFlecha("recurso/flechaizq.png", 15, 280, -1);
+        add(lblFlechaIzq);
 
-        lblFlechaDer = crearFlecha(imgFlechaDer, 800, 250, 1);
-        panelFondo.add(lblFlechaDer);
+        lblFlechaDer = crearFlecha("recurso/flechader.png", 815, 280, 1);
+        add(lblFlechaDer);
 
         // Indicador de página
         lblIndicador = new JLabel("", SwingConstants.CENTER);
         lblIndicador.setFont(FUENTE_INDIC);
         lblIndicador.setForeground(COLOR_INDICAD);
-        lblIndicador.setBounds(350, 520, 200, 30);
-        panelFondo.add(lblIndicador);
+        lblIndicador.setBounds(350, 515, 200, 30);
+        add(lblIndicador);
 
-        // Botón cerrar
-        JButton btnVolver = new JButton("✖  Cerrar");
+        // Botón volver
+        JButton btnVolver = new JButton("✖  Volver");
         btnVolver.setFont(new Font("Arial Black", Font.BOLD, 13));
         btnVolver.setForeground(Color.WHITE);
         btnVolver.setBackground(new Color(30, 100, 10));
         btnVolver.setBorder(BorderFactory.createLineBorder(new Color(80, 200, 40), 2));
         btnVolver.setFocusPainted(false);
         btnVolver.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnVolver.setBounds(650, 520, 120, 36);
-        btnVolver.addActionListener(e -> dispose());
-        panelFondo.add(btnVolver);
+        btnVolver.setBounds(650, 515, 120, 36);
+        btnVolver.addActionListener(e -> {
+            if (ventanaPadre instanceof mainFrame) {
+                ((mainFrame) ventanaPadre).mostrarMenuPrincipal();
+            }
+        });
+        add(btnVolver);
     }
 
-    private JLabel crearFlecha(ImageIcon icon, int x, int y, int direccion) {
-        JLabel lbl = new JLabel();
-        if (icon != null && icon.getIconWidth() > 0) {
-            Image img = icon.getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH);
-            lbl.setIcon(new ImageIcon(img));
-        } else {
-            lbl.setText(direccion < 0 ? "◄" : "►");
-            lbl.setFont(new Font("Arial", Font.BOLD, 36));
-            lbl.setForeground(new Color(60, 200, 30));
-        }
+    private JLabel crearFlecha(String ruta, int x, int y, int direccion) {
+        Image img = new ImageIcon(ruta).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+        JLabel lbl = new JLabel(new ImageIcon(img));
         lbl.setBounds(x, y, 70, 70);
         lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         lbl.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) { cambiarPagina(direccion); }
+            @Override
+            public void mouseClicked(MouseEvent e) { cambiarPagina(direccion); }
         });
         return lbl;
     }
@@ -256,22 +216,12 @@ public class VentanaReglas extends JFrame {
 
     private void actualizarPagina() {
         String[] pagina = PAGINAS[paginaActual];
-        String tituloPag = pagina.length > 0 ? pagina[0] : "";
+        lblTitPag.setText(pagina.length > 0 ? pagina[0] : "");
 
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i < pagina.length; i++) {
             sb.append(pagina[i]);
             if (i < pagina.length - 1) sb.append("\n");
-        }
-
-        Component[] comps = ((JPanel) getContentPane()).getComponents();
-        for (Component c : comps) {
-            if (c instanceof JPanel) {
-                Object obj = ((JPanel) c).getClientProperty("tituloPag");
-                if (obj instanceof JLabel) {
-                    ((JLabel) obj).setText(tituloPag);
-                }
-            }
         }
 
         areaContenido.setText(sb.toString());
@@ -281,9 +231,5 @@ public class VentanaReglas extends JFrame {
 
         lblFlechaIzq.setVisible(paginaActual > 0);
         lblFlechaDer.setVisible(paginaActual < PAGINAS.length - 1);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(VentanaReglas::new);
     }
 }

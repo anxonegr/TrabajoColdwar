@@ -1,95 +1,104 @@
-package ventanas; 
+package ventanas;
 
 import javax.swing.*;
-import java.awt.*; 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.SwingConstants;
+import java.awt.*;
+import java.awt.event.*;
 
-public class VentanaCrearEquipos extends JFrame {
-    
-    // variables
+public class VentanaCrearEquipos extends JPanel {
+
+    private static final long serialVersionUID = 1L;
+
+    private JFrame ventanaPadre;
+
     private JButton btnAnadir, btnJugar, btnInfo;
     private JTextField[] cajasNombres;
     private JComboBox<String>[] combosTipos;
-    private JLabel[] etiqEquipos; 
-    private JLabel[] miniFotos; // Novedad: Las fotos en pequeñito
+    private JLabel[] etiqEquipos;
+    private JLabel[] miniFotos;
 
-    // Arrays con los nombres exactos y sus archivos correspondientes
-    private String[] nombresPersonajes = {"Nobita", "Agallas", "Homer", "Peter Griffin", "Finn el Humano", "Fanboy & Chum Chum"};
-    private String[] archPersonajes = {"nobita.png", "agallas.png", "homer.png", "peter.png", "finn.png", "fanboychumchum.png"};
+    private String[] nombresPersonajes = {
+        "Nobita", "Agallas", "Homer", "Peter Griffin", "Finn el Humano", "Fanboy & Chum Chum"
+    };
+    private String[] archPersonajes = {
+        "nobita.png", "agallas.png", "homer.png", "peter.png", "finn.png", "fanboychumchum.png"
+    };
 
-    public VentanaCrearEquipos() {
-        // ventana y fondo
-        setTitle("Crear Equipos - Coldwar");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        setContentPane(new JLabel(new ImageIcon("recurso/fondo.png")));
-        setLayout(null); 
+    @SuppressWarnings("unchecked")
+    public VentanaCrearEquipos(JFrame padre) {
+        this.ventanaPadre = padre;
 
-        // titulo principal
-        JLabel labelTitulo = new JLabel(new ImageIcon("recurso/crearEquipos.png"));
-        labelTitulo.setBounds(200, 20, 400, 80);
+        // Este panel ocupa exactamente la ventana y tiene layout null
+        setLayout(null);
+        setBounds(0, 0, 900, 600);
+        setOpaque(false); // el fondo lo pinta paintComponent
+
+        // ── Título ──────────────────────────────────────────────────────────
+        JLabel labelTitulo = new JLabel(escalar("recurso/crearEquipos.png", 400, 80));
+        labelTitulo.setBounds(250, 15, 400, 80);
         add(labelTitulo);
 
-        // etiquetas de columna 
-        JLabel labelEtiqNombre = new JLabel(new ImageIcon("recurso/nombreEquipo.png"));
-        labelEtiqNombre.setBounds(250, 100, 200, 40);
-        add(labelEtiqNombre);
+        // ── Cabeceras ────────────────────────────────────────────────────────
+        JLabel lblNombre = new JLabel(escalar("recurso/nombreEquipo.png", 200, 35));
+        lblNombre.setBounds(260, 100, 200, 35);
+        add(lblNombre);
 
-        JLabel labelEtiqTipo = new JLabel(new ImageIcon("recurso/personajes.png"));
-        labelEtiqTipo.setBounds(470, 100, 200, 40);
-        add(labelEtiqTipo);
+        JLabel lblPersonaje = new JLabel(escalar("recurso/personajes.png", 180, 35));
+        lblPersonaje.setBounds(470, 100, 180, 35);
+        add(lblPersonaje);
 
-        // arrays y componentes
+        // ── Filas de equipos ─────────────────────────────────────────────────
         cajasNombres = new JTextField[6];
-        combosTipos = new JComboBox[6];
-        etiqEquipos = new JLabel[6]; 
-        miniFotos = new JLabel[6];
-        
-        int yInicial = 150; 
-        
-        Color colorFondoInput = new Color(30, 30, 30); 
-        Color colorTextoInput = Color.WHITE;
-        Color colorBordeInput = Color.GREEN; 
-        Font fuenteInput = new Font("Arial", Font.PLAIN, 14);
+        combosTipos  = new JComboBox[6];
+        etiqEquipos  = new JLabel[6];
+        miniFotos    = new JLabel[6];
 
-        //construye los equipos 
+        Color colorFondo = new Color(20, 20, 20);
+        Color colorTexto = Color.WHITE;
+        Color colorBorde = new Color(0, 200, 80);
+        Font  fuenteInput = new Font("Arial", Font.PLAIN, 13);
+
+        int yBase = 145;
+        int paso  = 48;
+
         for (int i = 0; i < 6; i++) {
-            String rutaEtiq = "src/recurso/equipo" + (i + 1) + ".png";
-            etiqEquipos[i] = new JLabel(new ImageIcon(rutaEtiq));
-            etiqEquipos[i].setBounds(100, yInicial + (i * 50), 130, 30);
+            int y = yBase + i * paso;
+
+            // Etiqueta equipo
+            etiqEquipos[i] = new JLabel(escalar("recurso/equipo" + (i + 1) + ".png", 120, 30));
+            etiqEquipos[i].setBounds(110, y, 120, 30);
             add(etiqEquipos[i]);
 
+            // Caja nombre
             cajasNombres[i] = new JTextField();
-            combosTipos[i] = new JComboBox<>(nombresPersonajes); 
-            
             cajasNombres[i].setFont(fuenteInput);
-            cajasNombres[i].setBackground(colorFondoInput);
-            cajasNombres[i].setForeground(colorTextoInput);
-            cajasNombres[i].setBorder(BorderFactory.createLineBorder(colorBordeInput, 2));
+            cajasNombres[i].setBackground(colorFondo);
+            cajasNombres[i].setForeground(colorTexto);
+            cajasNombres[i].setCaretColor(colorTexto);
+            cajasNombres[i].setBorder(BorderFactory.createLineBorder(colorBorde, 2));
+            cajasNombres[i].setBounds(250, y, 195, 30);
+            add(cajasNombres[i]);
 
+            // ComboBox
+            combosTipos[i] = new JComboBox<>(nombresPersonajes);
             combosTipos[i].setFont(fuenteInput);
-            combosTipos[i].setBackground(colorFondoInput);
-            combosTipos[i].setForeground(colorTextoInput);
+            combosTipos[i].setBackground(colorFondo);
+            combosTipos[i].setForeground(colorTexto);
+            combosTipos[i].setBounds(460, y, 160, 30);
+            add(combosTipos[i]);
 
-            cajasNombres[i].setBounds(250, yInicial + (i * 50), 200, 30);
-            combosTipos[i].setBounds(470, yInicial + (i * 50), 150, 30);
-            
-            // mini foto
+            // Mini foto
             miniFotos[i] = new JLabel();
-            miniFotos[i].setBounds(630, yInicial + (i * 50) - 5, 40, 40); // A la derecha del JComboBox
-            actualizarMiniFoto(miniFotos[i], 0); // Por defecto carga la de Nobita
+            miniFotos[i].setBounds(632, y - 4, 40, 40);
+            actualizarMiniFoto(miniFotos[i], 0);
+            add(miniFotos[i]);
 
-            // Acción para que al cambiar el desplegable, cambie la mini foto al momento
-            final int index = i;
-            combosTipos[i].addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    actualizarMiniFoto(miniFotos[index], combosTipos[index].getSelectedIndex());
-                }
-            });
-            
-            // Ocultar los sobrantes al inicio
+            final int idx = i;
+            combosTipos[i].addActionListener(e ->
+                actualizarMiniFoto(miniFotos[idx], combosTipos[idx].getSelectedIndex())
+            );
+
+            // Equipos 4-6 ocultos al inicio
             if (i >= 3) {
                 etiqEquipos[i].setVisible(false);
                 cajasNombres[i].setVisible(false);
@@ -97,175 +106,183 @@ public class VentanaCrearEquipos extends JFrame {
                 miniFotos[i].setVisible(false);
             }
             
-            add(cajasNombres[i]);
-            add(combosTipos[i]);
-            add(miniFotos[i]);
+            
         }
 
-        // botones de accion
-        btnAnadir = new JButton(new ImageIcon("recurso/añadirEquipo.png"));
-        btnAnadir.setFocusPainted(false);
-        btnAnadir.setBorderPainted(false);
-        btnAnadir.setContentAreaFilled(false); 
-        btnAnadir.setBounds(150, 480, 150, 50);
+        // ── Botones ──────────────────────────────────────────────────────────
+        btnAnadir = boton("recurso/añadirEquipo.png", 150, 500, 160, 45);
+        btnJugar  = boton("recurso/jugar.png",        330, 500, 160, 45);
+        btnInfo   = boton("recurso/Infopersonajes.png", 510, 500, 160, 45);
+
         add(btnAnadir);
-
-        btnJugar = new JButton(new ImageIcon("recurso/jugar.png"));
-        btnJugar.setFocusPainted(false);
-        btnJugar.setBorderPainted(false);
-        btnJugar.setContentAreaFilled(false);
-        btnJugar.setBounds(320, 480, 150, 50);
         add(btnJugar);
-
-        btnInfo = new JButton(new ImageIcon("recurso/Infopersonajes.png"));
-        btnInfo.setFocusPainted(false);
-        btnInfo.setBorderPainted(false);
-        btnInfo.setContentAreaFilled(false);
-        btnInfo.setBounds(490, 480, 150, 50);
         add(btnInfo);
 
-        // 8. botones
-        btnAnadir.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 3; i < 6; i++) {
-                    if (!etiqEquipos[i].isVisible()) {
-                        etiqEquipos[i].setVisible(true);
-                        cajasNombres[i].setVisible(true);
-                        combosTipos[i].setVisible(true);
-                        miniFotos[i].setVisible(true); // Mostrar también la fotito
-                        
-                        if (i == 5) {
-                            btnAnadir.setVisible(false);
-                        }
-                        break; 
-                    }
+        // ── Acciones ─────────────────────────────────────────────────────────
+        btnAnadir.addActionListener(e -> {
+            for (int i = 3; i < 6; i++) {
+                if (!etiqEquipos[i].isVisible()) {
+                    etiqEquipos[i].setVisible(true);
+                    cajasNombres[i].setVisible(true);
+                    combosTipos[i].setVisible(true);
+                    miniFotos[i].setVisible(true);
+                    if (i == 5) btnAnadir.setVisible(false);
+                    break;
                 }
             }
         });
 
-        // Abrir la  ventana de Información al hacer clic
-        btnInfo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                DialogoInfoPersonajes dialogo = new DialogoInfoPersonajes(VentanaCrearEquipos.this);
-                dialogo.setVisible(true);
+        btnInfo.addActionListener(e ->
+            new DialogoInfoPersonajes(ventanaPadre).setVisible(true)
+        );
+
+        btnJugar.addActionListener(e ->
+            JOptionPane.showMessageDialog(ventanaPadre, "Iniciando partida...")
+        );
+        
+     // ── Botón volver ─────────────────────────────────────────────────────────
+        JButton btnVolver = boton("recurso/flechaizq.png", 20, 520, 60, 50);
+        btnVolver.addActionListener(e -> {
+            if (ventanaPadre instanceof mainFrame) {
+                ((mainFrame) ventanaPadre).mostrarMenuPrincipal();
             }
         });
+        add(btnVolver);
     }
 
-    // Método para escalar las imágenes pequeñas al lado de los nombres
+    // Pinta el fondo estirado a 900x600 directamente en este panel
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        ImageIcon ic = new ImageIcon("recurso/fondo.png");
+        g.drawImage(ic.getImage(), 0, 0, 900, 600, this);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private ImageIcon escalar(String ruta, int w, int h) {
+        Image img = new ImageIcon(ruta).getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
+    }
+
+    private JButton boton(String ruta, int x, int y, int w, int h) {
+        // Cargamos la imagen original SIN escalar — el setBounds ya define el tamaño visual
+        ImageIcon icono = new ImageIcon(ruta);
+        Image imgOriginal = icono.getImage();
+        // Solo escalamos si la imagen existe (ancho > 0)
+        ImageIcon iconoFinal = (imgOriginal.getWidth(null) > 0)
+            ? new ImageIcon(imgOriginal.getScaledInstance(w, h, Image.SCALE_SMOOTH))
+            : icono;
+
+        JButton btn = new JButton(iconoFinal);
+        btn.setBounds(x, y, w, h);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setFocusPainted(false);
+        btn.setOpaque(false);
+        // Evita que el JButton reescale el icono internamente
+        btn.setMargin(new Insets(0, 0, 0, 0));
+        btn.setHorizontalAlignment(SwingConstants.CENTER);
+        btn.setVerticalAlignment(SwingConstants.CENTER);
+        return btn;
+    }
+
     private void actualizarMiniFoto(JLabel label, int indice) {
-        ImageIcon icono = new ImageIcon("recurso/" + archPersonajes[indice]);
-        Image img = icono.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+        Image img = new ImageIcon("recurso/" + archPersonajes[indice])
+                        .getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
         label.setIcon(new ImageIcon(img));
     }
 
-   
+    // ── Diálogo info personajes ───────────────────────────────────────────────
+
     class DialogoInfoPersonajes extends JDialog {
+        private static final long serialVersionUID = 1L;
         private int indiceActual = 0;
         private JLabel fotoGrande;
         private LabelTextoBordeado textoInfo;
 
-        // La información detallada de cada personaje usando saltos de línea (\n)
         private String[] detalles = {
-            "NOBITA\n\nPlaneta: Enano\nVida: 100 ♥\nPasiva: Esquiva 50%\nTorpe pero escurridizo por suerte.",
-            "AGALLAS\n\nPlaneta: Azul\nDaño: x2 Rojo, /2 Verde\nCobarde pero con ventaja oculta.",
-            "HOMER\n\nPlaneta: Gaseoso\nVida: 400 ♥\nMisiles crecen por ronda.\nLento pero aguanta todo.",
+            "NOBITA\n\nPlaneta: Enano\nVida: 100 ♥\nPasiva: Esquiva 50%\nTorpe pero escurridizo.",
+            "AGALLAS\n\nPlaneta: Azul\nDaño: x2 Rojo, /2 Verde\nCobarde pero con ventaja.",
+            "HOMER\n\nPlaneta: Gaseoso\nVida: 400 ♥\nMisiles crecen por ronda.",
             "PETER GRIFFIN\n\nPlaneta: Rojo\nDaño: x2 Verde, /2 Azul\nAgresivo y bruto.",
             "FINN EL HUMANO\n\nPlaneta: Verde\nDaño: x2 Azul, /2 Rojo\nHéroe aventurero.",
-            "FANBOY & CHUM CHUM\n\nPlaneta: Normal\nVida: 200 ♥ | Energía: 50 ⚡\nDos juntos, equilibrados."
+            "FANBOY & CHUM CHUM\n\nPlaneta: Normal\nVida: 200 ♥ | Energía: 50 ⚡\nEquilibrados."
         };
 
         public DialogoInfoPersonajes(JFrame parent) {
-            super(parent, "Info Personajes", true); // "true" bloquea la ventana de atrás hasta que cierres esta
+            super(parent, "Info Personajes", true);
             setSize(600, 400);
-            setLocationRelativeTo(parent); // Centrar en la pantalla
+            setLocationRelativeTo(parent);
             setLayout(null);
-            
-            // Reutilizamos el fondo del juego
-            setContentPane(new JLabel(new ImageIcon("recurso/fondo.png")));
+            setResizable(false);
 
-            // Foto grande a la izquierda
+            // Fondo del diálogo
+            JLabel fondo = new JLabel(escalar("recurso/fondo.png", 600, 400));
+            fondo.setBounds(0, 0, 600, 400);
+            fondo.setLayout(null);
+            setContentPane(fondo);
+
             fotoGrande = new JLabel();
             fotoGrande.setBounds(50, 50, 200, 200);
-            add(fotoGrande);
+            fondo.add(fotoGrande);
 
-            // Texto a la derecha
             textoInfo = new LabelTextoBordeado();
             textoInfo.setBounds(280, 50, 280, 250);
-            add(textoInfo);
+            fondo.add(textoInfo);
 
-            // Flecha Izquierda
-            JButton btnIzq = new JButton(new ImageIcon("recurso/flechaizq.png"));
-            btnIzq.setFocusPainted(false);
-            btnIzq.setBorderPainted(false);
-            btnIzq.setContentAreaFilled(false);
-            btnIzq.setBounds(70, 270, 70, 50);
-            btnIzq.addActionListener(e -> {
-                indiceActual--;
-                if (indiceActual < 0) indiceActual = 5; // Vuelve al final si nos pasamos
-                actualizarVista();
-            });
-            add(btnIzq);
+            JButton btnIzq = boton("recurso/flechaizq.png", 70, 270, 70, 50);
+            btnIzq.addActionListener(e -> { indiceActual = (indiceActual - 1 + 6) % 6; actualizarVista(); });
+            fondo.add(btnIzq);
 
-            // Flecha Derecha
-            JButton btnDer = new JButton(new ImageIcon("recurso/flechader.png"));
-            btnDer.setFocusPainted(false);
-            btnDer.setBorderPainted(false);
-            btnDer.setContentAreaFilled(false);
-            btnDer.setBounds(160, 270, 70, 50);
-            btnDer.addActionListener(e -> {
-                indiceActual++;
-                if (indiceActual > 5) indiceActual = 0; // Vuelve al principio si nos pasamos
-                actualizarVista();
-            });
-            add(btnDer);
+            JButton btnDer = boton("recurso/flechader.png", 160, 270, 70, 50);
+            btnDer.addActionListener(e -> { indiceActual = (indiceActual + 1) % 6; actualizarVista(); });
+            fondo.add(btnDer);
 
-            actualizarVista(); // Carga el primer personaje (Nobita)
+            actualizarVista();
         }
 
         private void actualizarVista() {
-            ImageIcon icono = new ImageIcon("recurso/" + archPersonajes[indiceActual]);
-            Image img = icono.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            Image img = new ImageIcon("recurso/" + archPersonajes[indiceActual])
+                            .getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
             fotoGrande.setIcon(new ImageIcon(img));
             textoInfo.setText(detalles[indiceActual]);
             textoInfo.repaint();
         }
     }
 
+    // ── Texto con borde negro ─────────────────────────────────────────────────
+
     class LabelTextoBordeado extends JTextArea {
+        private static final long serialVersionUID = 1L;
+
         public LabelTextoBordeado() {
-            setOpaque(false); // Fondo transparente
+            setOpaque(false);
             setEditable(false);
             setFocusable(false);
-            setFont(new Font("Arial", Font.BOLD, 18));
+            setFont(new Font("Arial", Font.BOLD, 16));
         }
 
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
-            // Suavizado para que las letras no se vean pixeladas
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIASING_ON);
-            
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
             String[] lineas = getText().split("\n");
             FontMetrics fm = g2.getFontMetrics();
-            int y = fm.getAscent() + 10; 
+            int y = fm.getAscent() + 10;
+            int grosor = 2;
 
             for (String linea : lineas) {
-                // Dibujar el contorno negro (dibujando la letra desplazada)
                 g2.setColor(Color.BLACK);
-                int grosor = 2; // Grosor del borde
-                for (int i = -grosor; i <= grosor; i++) {
-                    for (int j = -grosor; j <= grosor; j++) {
-                        if (i != 0 || j != 0) {
+                for (int i = -grosor; i <= grosor; i++)
+                    for (int j = -grosor; j <= grosor; j++)
+                        if (i != 0 || j != 0)
                             g2.drawString(linea, 10 + i, y + j);
-                        }
-                    }
-                }
-                //Dibujar el texto blanco original encima
                 g2.setColor(Color.WHITE);
                 g2.drawString(linea, 10, y);
-                
-                y += fm.getHeight(); // Bajar a la siguiente línea
+                y += fm.getHeight();
             }
         }
     }

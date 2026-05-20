@@ -38,10 +38,7 @@ public class TrabajoColdwar {
      * @param args argumentos de línea de comandos
      */
     public static void main(String[] args) {
-        
-        //arrancar ventana crear equipos:
-        VentanaCrearEquipos miVentana = new VentanaCrearEquipos();
-        miVentana.setVisible(true);
+    
         
         boolean salir = false;
 
@@ -431,7 +428,7 @@ public class TrabajoColdwar {
      * Muestra las reglas del juego.
      */
     public static void reglas() {
-        Mensaje.reglas();
+        Mensaje.informacion();
     }
 
    
