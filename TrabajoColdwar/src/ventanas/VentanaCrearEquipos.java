@@ -24,20 +24,20 @@ public class VentanaCrearEquipos extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-        setContentPane(new JLabel(new ImageIcon("src/recurso/fondo.png")));
+        setContentPane(new JLabel(new ImageIcon("recurso/fondo.png")));
         setLayout(null); 
 
         // titulo principal
-        JLabel labelTitulo = new JLabel(new ImageIcon("src/recurso/crearEquipos.png"));
+        JLabel labelTitulo = new JLabel(new ImageIcon("recurso/crearEquipos.png"));
         labelTitulo.setBounds(200, 20, 400, 80);
         add(labelTitulo);
 
         // etiquetas de columna 
-        JLabel labelEtiqNombre = new JLabel(new ImageIcon("src/recurso/nombreEquipo.png"));
+        JLabel labelEtiqNombre = new JLabel(new ImageIcon("recurso/nombreEquipo.png"));
         labelEtiqNombre.setBounds(250, 100, 200, 40);
         add(labelEtiqNombre);
 
-        JLabel labelEtiqTipo = new JLabel(new ImageIcon("src/recurso/personajes.png"));
+        JLabel labelEtiqTipo = new JLabel(new ImageIcon("recurso/personajes.png"));
         labelEtiqTipo.setBounds(470, 100, 200, 40);
         add(labelEtiqTipo);
 
@@ -103,21 +103,21 @@ public class VentanaCrearEquipos extends JFrame {
         }
 
         // botones de accion
-        btnAnadir = new JButton(new ImageIcon("src/recurso/añadirEquipo.png"));
+        btnAnadir = new JButton(new ImageIcon("recurso/añadirEquipo.png"));
         btnAnadir.setFocusPainted(false);
         btnAnadir.setBorderPainted(false);
         btnAnadir.setContentAreaFilled(false); 
         btnAnadir.setBounds(150, 480, 150, 50);
         add(btnAnadir);
 
-        btnJugar = new JButton(new ImageIcon("src/recurso/jugar.png"));
+        btnJugar = new JButton(new ImageIcon("recurso/jugar.png"));
         btnJugar.setFocusPainted(false);
         btnJugar.setBorderPainted(false);
         btnJugar.setContentAreaFilled(false);
         btnJugar.setBounds(320, 480, 150, 50);
         add(btnJugar);
 
-        btnInfo = new JButton(new ImageIcon("src/recurso/Infopersonajes.png"));
+        btnInfo = new JButton(new ImageIcon("recurso/Infopersonajes.png"));
         btnInfo.setFocusPainted(false);
         btnInfo.setBorderPainted(false);
         btnInfo.setContentAreaFilled(false);
@@ -154,7 +154,7 @@ public class VentanaCrearEquipos extends JFrame {
 
     // Método para escalar las imágenes pequeñas al lado de los nombres
     private void actualizarMiniFoto(JLabel label, int indice) {
-        ImageIcon icono = new ImageIcon("src/recurso/" + archPersonajes[indice]);
+        ImageIcon icono = new ImageIcon("recurso/" + archPersonajes[indice]);
         Image img = icono.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
         label.setIcon(new ImageIcon(img));
     }
@@ -182,7 +182,7 @@ public class VentanaCrearEquipos extends JFrame {
             setLayout(null);
             
             // Reutilizamos el fondo del juego
-            setContentPane(new JLabel(new ImageIcon("src/recurso/fondo.png")));
+            setContentPane(new JLabel(new ImageIcon("recurso/fondo.png")));
 
             // Foto grande a la izquierda
             fotoGrande = new JLabel();
@@ -195,7 +195,7 @@ public class VentanaCrearEquipos extends JFrame {
             add(textoInfo);
 
             // Flecha Izquierda
-            JButton btnIzq = new JButton(new ImageIcon("src/recurso/flechaizq.png"));
+            JButton btnIzq = new JButton(new ImageIcon("recurso/flechaizq.png"));
             btnIzq.setFocusPainted(false);
             btnIzq.setBorderPainted(false);
             btnIzq.setContentAreaFilled(false);
@@ -208,7 +208,7 @@ public class VentanaCrearEquipos extends JFrame {
             add(btnIzq);
 
             // Flecha Derecha
-            JButton btnDer = new JButton(new ImageIcon("src/recurso/flechader.png"));
+            JButton btnDer = new JButton(new ImageIcon("recurso/flechader.png"));
             btnDer.setFocusPainted(false);
             btnDer.setBorderPainted(false);
             btnDer.setContentAreaFilled(false);
@@ -224,7 +224,7 @@ public class VentanaCrearEquipos extends JFrame {
         }
 
         private void actualizarVista() {
-            ImageIcon icono = new ImageIcon("src/recurso/" + archPersonajes[indiceActual]);
+            ImageIcon icono = new ImageIcon("recurso/" + archPersonajes[indiceActual]);
             Image img = icono.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
             fotoGrande.setIcon(new ImageIcon(img));
             textoInfo.setText(detalles[indiceActual]);
