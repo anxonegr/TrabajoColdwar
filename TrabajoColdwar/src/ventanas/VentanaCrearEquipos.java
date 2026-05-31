@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.SwingConstants;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 public class VentanaCrearEquipos extends JPanel {
 
@@ -17,6 +18,9 @@ public class VentanaCrearEquipos extends JPanel {
     private JLabel[] etiqEquipos;
     private JLabel[] miniFotos;
 
+    // ── NUEVO: etiquetas de error por fila (una bajo cada caja de nombre) ──
+    private JLabel[] lblErrores;
+
     private String[] nombresPersonajes = {
         "Nobita", "Agallas", "Homer", "Peter Griffin", "Finn el Humano", "Fanboy & Chum Chum"
     };
@@ -28,10 +32,9 @@ public class VentanaCrearEquipos extends JPanel {
     public VentanaCrearEquipos(JFrame padre) {
         this.ventanaPadre = padre;
 
-        // Este panel ocupa exactamente la ventana y tiene layout null
         setLayout(null);
         setBounds(0, 0, 900, 600);
-        setOpaque(false); // el fondo lo pinta paintComponent
+        setOpaque(false);
 
         // ── Título ──────────────────────────────────────────────────────────
         JLabel labelTitulo = new JLabel(escalar("recurso/crearEquipos.png", 400, 80));
@@ -52,6 +55,7 @@ public class VentanaCrearEquipos extends JPanel {
         combosTipos  = new JComboBox[6];
         etiqEquipos  = new JLabel[6];
         miniFotos    = new JLabel[6];
+        lblErrores   = new JLabel[6];   // NUEVO
 
         Color colorFondo = new Color(20, 20, 20);
         Color colorTexto = Color.WHITE;
@@ -79,6 +83,15 @@ public class VentanaCrearEquipos extends JPanel {
             cajasNombres[i].setBounds(250, y, 195, 30);
             add(cajasNombres[i]);
 
+            // ── NUEVO: etiqueta de error bajo la caja, oculta por defecto ──
+            lblErrores[i] = new JLabel("");
+            lblErrores[i].setFont(new Font("Arial", Font.BOLD, 11));
+            lblErrores[i].setForeground(new Color(255, 70, 70));
+            lblErrores[i].setBounds(250, y + 31, 300, 15);
+            lblErrores[i].setVisible(false);
+            add(lblErrores[i]);
+            // ────────────────────────────────────────────────────────────────
+
             // ComboBox
             combosTipos[i] = new JComboBox<>(nombresPersonajes);
             combosTipos[i].setFont(fuenteInput);
@@ -104,6 +117,7 @@ public class VentanaCrearEquipos extends JPanel {
                 cajasNombres[i].setVisible(false);
                 combosTipos[i].setVisible(false);
                 miniFotos[i].setVisible(false);
+                lblErrores[i].setVisible(false);
             }
         }
 
@@ -134,12 +148,11 @@ public class VentanaCrearEquipos extends JPanel {
             new DialogoInfoPersonajes(ventanaPadre).setVisible(true)
         );
 
-        btnJugar.addActionListener(e ->
-            JOptionPane.showMessageDialog(ventanaPadre, "Iniciando partida...")
-        );
-        
+        // ── CAMBIO: btnJugar ahora valida antes de arrancar ──────────────────
+        btnJugar.addActionListener(e -> validarYJugar());
+        // ─────────────────────────────────────────────────────────────────────
+
         // ── Botón Volver ──────────────────────────────────────────────────────
-        // Nombre de la flecha actualizado a flechaizqroja.png
         JButton btnVolver = boton("recurso/flechaizqroja.png", 20, 520, 60, 50);
         btnVolver.addActionListener(e -> {
             if (ventanaPadre instanceof mainFrame) {
@@ -148,16 +161,92 @@ public class VentanaCrearEquipos extends JPanel {
         });
         add(btnVolver);
 
-        // ── Botón Salir (NUEVO) ───────────────────────────────────────────────
-        // Colocado en la esquina inferior derecha para mantener la simetría
+        // ── Botón Salir ───────────────────────────────────────────────────────
         JButton btnSalir = boton("recurso/salir.png", 800, 520, 60, 50);
-        btnSalir.addActionListener(e -> {
-            System.exit(0); // Cierra el programa por completo
-        });
+        btnSalir.addActionListener(e -> System.exit(0));
         add(btnSalir);
     }
 
-    // Pinta el fondo estirado a 900x600 directamente en este panel
+    // ── NUEVO: validación completa antes de empezar la partida ───────────────
+    /**
+     * Comprueba que todos los equipos visibles tengan nombre y que no haya
+     * nombres repetidos. Si todo va bien, arranca el juego. Si no, muestra
+     * errores en rojo junto a cada campo problemático Y un JOptionPane resumen.
+     */
+    private void validarYJugar() {
+
+        // Limpiamos todos los errores anteriores
+        limpiarErrores();
+
+        ArrayList<String> nombres = new ArrayList<>();
+        boolean hayError = false;
+        StringBuilder resumenErrores = new StringBuilder();
+
+        for (int i = 0; i < 6; i++) {
+
+            // Solo validamos filas visibles
+            if (!cajasNombres[i].isVisible()) continue;
+
+            String nombre = cajasNombres[i].getText().trim();
+
+            // 1. Campo vacío
+            if (nombre.isEmpty()) {
+                marcarError(i, "El nombre no puede estar vacío.");
+                resumenErrores.append("• Equipo ").append(i + 1).append(": nombre vacío.\n");
+                hayError = true;
+                continue;
+            }
+
+            // 2. Nombre repetido
+            String nombreLower = nombre.toLowerCase();
+            if (nombres.contains(nombreLower)) {
+                marcarError(i, "Nombre repetido.");
+                resumenErrores.append("• Equipo ").append(i + 1)
+                              .append(": \"").append(nombre).append("\" ya está en uso.\n");
+                hayError = true;
+            } else {
+                nombres.add(nombreLower);
+            }
+        }
+
+        if (hayError) {
+            // Ventanita emergente con resumen de todos los problemas
+            JOptionPane.showMessageDialog(
+                ventanaPadre,
+                "Corrige los siguientes errores antes de jugar:\n\n" + resumenErrores,
+                "Error — Datos incorrectos",
+                JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        // Todo OK → arrancamos
+        JOptionPane.showMessageDialog(
+            ventanaPadre,
+            "¡Todo listo! Iniciando partida...",
+            "ColdWar",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+        // Aquí irá la llamada real al arranque del juego cuando se integre
+    }
+
+    /** Pone el borde rojo y el mensaje de error en la fila indicada. */
+    private void marcarError(int i, String mensaje) {
+        cajasNombres[i].setBorder(BorderFactory.createLineBorder(new Color(255, 60, 60), 2));
+        lblErrores[i].setText("⚠ " + mensaje);
+        lblErrores[i].setVisible(true);
+    }
+
+    /** Restaura todos los bordes y oculta todos los mensajes de error. */
+    private void limpiarErrores() {
+        Color colorBordeNormal = new Color(0, 200, 80);
+        for (int i = 0; i < 6; i++) {
+            cajasNombres[i].setBorder(BorderFactory.createLineBorder(colorBordeNormal, 2));
+            lblErrores[i].setVisible(false);
+        }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -173,10 +262,8 @@ public class VentanaCrearEquipos extends JPanel {
     }
 
     private JButton boton(String ruta, int x, int y, int w, int h) {
-        // Cargamos la imagen original SIN escalar — el setBounds ya define el tamaño visual
         ImageIcon icono = new ImageIcon(ruta);
         Image imgOriginal = icono.getImage();
-        // Solo escalamos si la imagen existe (ancho > 0)
         ImageIcon iconoFinal = (imgOriginal.getWidth(null) > 0)
             ? new ImageIcon(imgOriginal.getScaledInstance(w, h, Image.SCALE_SMOOTH))
             : icono;
@@ -187,7 +274,6 @@ public class VentanaCrearEquipos extends JPanel {
         btn.setContentAreaFilled(false);
         btn.setFocusPainted(false);
         btn.setOpaque(false);
-        // Evita que el JButton reescale el icono internamente
         btn.setMargin(new Insets(0, 0, 0, 0));
         btn.setHorizontalAlignment(SwingConstants.CENTER);
         btn.setVerticalAlignment(SwingConstants.CENTER);
@@ -200,7 +286,7 @@ public class VentanaCrearEquipos extends JPanel {
         label.setIcon(new ImageIcon(img));
     }
 
-    // ── Diálogo info personajes ───────────────────────────────────────────────
+    // ── Diálogo info personajes (sin cambios) ─────────────────────────────────
 
     class DialogoInfoPersonajes extends JDialog {
         private static final long serialVersionUID = 1L;
@@ -224,7 +310,6 @@ public class VentanaCrearEquipos extends JPanel {
             setLayout(null);
             setResizable(false);
 
-            // Fondo del diálogo
             JLabel fondo = new JLabel(escalar("recurso/fondo.png", 600, 400));
             fondo.setBounds(0, 0, 600, 400);
             fondo.setLayout(null);
@@ -238,7 +323,6 @@ public class VentanaCrearEquipos extends JPanel {
             textoInfo.setBounds(280, 50, 280, 250);
             fondo.add(textoInfo);
 
-            // Nombres de las flechas actualizados
             JButton btnIzq = boton("recurso/flechaizqroja.png", 70, 270, 70, 50);
             btnIzq.addActionListener(e -> { indiceActual = (indiceActual - 1 + 6) % 6; actualizarVista(); });
             fondo.add(btnIzq);
@@ -258,8 +342,6 @@ public class VentanaCrearEquipos extends JPanel {
             textoInfo.repaint();
         }
     }
-
-    // ── Texto con borde negro ─────────────────────────────────────────────────
 
     class LabelTextoBordeado extends JTextArea {
         private static final long serialVersionUID = 1L;
@@ -295,4 +377,3 @@ public class VentanaCrearEquipos extends JPanel {
         }
     }
 }
-
