@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 public class VentanaBatalla extends JFrame {
 
-    // Variables de las cosas que salen en la pantalla
     private JComboBox<String> comboObjetivos;
     private JTextField cajaMisiles;
     private JButton btnAtacar;
@@ -16,44 +15,40 @@ public class VentanaBatalla extends JFrame {
     private JLabel lblMisilesDisponibles;
     private JLabel lblFotoAtacante;
 
+    // ── NUEVO: etiqueta de error rojo que aparece bajo la caja de misiles ──
+    private JLabel lblError;
+
     public VentanaBatalla() {
-        // Configuracion basica de la ventana
         setTitle("ColdWar - Batalla");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centrar en la pantalla al abrir
-        setLayout(null); // Usamos null para poner las coordenadas a mano
+        setLocationRelativeTo(null);
+        setLayout(null);
 
-        // Ponemos la foto de fondo
         setContentPane(new JLabel(new ImageIcon("recurso/fondoBatalla.png")));
 
-        // Texto que dice de quien es el turno
         lblTurno = new JLabel("Turno de: ---");
         lblTurno.setFont(new Font("Arial", Font.BOLD, 28));
         lblTurno.setForeground(Color.WHITE);
         lblTurno.setBounds(250, 50, 400, 40);
         add(lblTurno);
 
-        // Foto del personaje que ataca (al lado del texto)
         lblFotoAtacante = new JLabel();
         lblFotoAtacante.setBounds(120, 30, 110, 110);
         add(lblFotoAtacante);
 
-        // Texto que dice los misiles que le quedan al jugador
         lblMisilesDisponibles = new JLabel("Misiles en reserva: 0");
         lblMisilesDisponibles.setFont(new Font("Arial", Font.BOLD, 18));
         lblMisilesDisponibles.setForeground(Color.GREEN);
         lblMisilesDisponibles.setBounds(250, 100, 300, 30);
         add(lblMisilesDisponibles);
 
-        // Etiqueta "Selecciona el objetivo"
         JLabel lblObjetivo = new JLabel("Selecciona el objetivo:");
         lblObjetivo.setFont(new Font("Arial", Font.BOLD, 16));
         lblObjetivo.setForeground(Color.WHITE);
         lblObjetivo.setBounds(200, 200, 200, 30);
         add(lblObjetivo);
 
-        // Desplegable para elegir a quien queremos atacar
         comboObjetivos = new JComboBox<>();
         comboObjetivos.setFont(new Font("Arial", Font.PLAIN, 14));
         comboObjetivos.setBackground(new Color(30, 30, 30));
@@ -61,14 +56,12 @@ public class VentanaBatalla extends JFrame {
         comboObjetivos.setBounds(400, 200, 200, 30);
         add(comboObjetivos);
 
-        // Etiqueta "Misiles a lanzar"
         JLabel lblMisiles = new JLabel("Misiles a lanzar:");
         lblMisiles.setFont(new Font("Arial", Font.BOLD, 16));
         lblMisiles.setForeground(Color.WHITE);
         lblMisiles.setBounds(200, 270, 200, 30);
         add(lblMisiles);
 
-        // Caja donde el usuario escribe la cantidad de misiles
         cajaMisiles = new JTextField();
         cajaMisiles.setFont(new Font("Arial", Font.BOLD, 16));
         cajaMisiles.setBackground(new Color(30, 30, 30));
@@ -77,15 +70,22 @@ public class VentanaBatalla extends JFrame {
         cajaMisiles.setBounds(400, 270, 100, 30);
         add(cajaMisiles);
 
-        // Boton de atacar (escondemos los bordes para que solo se vea tu imagen)
+        // ── NUEVO: etiqueta de error, invisible hasta que haga falta ──────────
+        lblError = new JLabel("");
+        lblError.setFont(new Font("Arial", Font.BOLD, 13));
+        lblError.setForeground(new Color(255, 60, 60));   // rojo vivo
+        lblError.setBounds(400, 305, 300, 22);
+        lblError.setVisible(false);
+        add(lblError);
+        // ──────────────────────────────────────────────────────────────────────
+
         btnAtacar = new JButton(new ImageIcon("recurso/btnAtacar.png"));
         btnAtacar.setFocusPainted(false);
         btnAtacar.setBorderPainted(false);
         btnAtacar.setContentAreaFilled(false);
-        btnAtacar.setBounds(300, 400, 200, 60); 
+        btnAtacar.setBounds(300, 400, 200, 60);
         add(btnAtacar);
 
-        // Le decimos al boton que ejecute un metodo al hacer clic
         btnAtacar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 lanzarAtaque();
@@ -93,32 +93,115 @@ public class VentanaBatalla extends JFrame {
         });
     }
 
-    // Metodo que usara el que hace la logica para cambiar el turno
     public void actualizarTurno(String nombreAtacante, int misilesTotales, String archivoImagen) {
         lblTurno.setText("Turno de: " + nombreAtacante);
         lblMisilesDisponibles.setText("Misiles en reserva: " + misilesTotales);
-        cajaMisiles.setText(""); // Vaciamos la caja para que no quede lo de antes
+        cajaMisiles.setText("");
+        ocultarError();   // limpiamos el error al cambiar de turno
 
-        // Cargamos la foto del nuevo turno y la adaptamos para que quede suave
         ImageIcon icono = new ImageIcon("recurso/" + archivoImagen);
         Image img = icono.getImage().getScaledInstance(110, 110, Image.SCALE_SMOOTH);
         lblFotoAtacante.setIcon(new ImageIcon(img));
     }
 
-    // Metodo para llenar el desplegable solo con los equipos vivos
     public void cargarObjetivos(ArrayList<String> nombresVivos) {
-        comboObjetivos.removeAllItems(); // Borramos los nombres viejos
+        comboObjetivos.removeAllItems();
         for (String nombre : nombresVivos) {
-            comboObjetivos.addItem(nombre); // Añadimos los nuevos
+            comboObjetivos.addItem(nombre);
         }
     }
 
-    // Lo que pasa internamente cuando haces clic en el boton de atacar
+    // ── Lanzar ataque con validación gráfica completa ─────────────────────────
     private void lanzarAtaque() {
+
         String objetivoSeleccionado = (String) comboObjetivos.getSelectedItem();
-        String misilesEscritos = cajaMisiles.getText();
-        
-        // Aqui el que hace los errores comprobara que no pongan letras
-        System.out.println("Has atacado a " + objetivoSeleccionado + " con " + misilesEscritos + " misiles");
+        String misilesTexto = cajaMisiles.getText().trim();
+
+        // 1. Caja vacía
+        if (misilesTexto.isEmpty()) {
+            mostrarError("Escribe cuántos misiles quieres lanzar.");
+            return;
+        }
+
+        int misiles;
+
+        // 2. El usuario ha escrito letras u otros caracteres no numéricos
+        //    Antes esto tiraba una excepción en la consola; ahora salta ventanita
+        try {
+            misiles = Integer.parseInt(misilesTexto);
+        } catch (NumberFormatException ex) {
+            // ── CAMBIO: antes -> crash silencioso o System.out.println
+            //           ahora  -> JOptionPane de error + aviso rojo inline
+            JOptionPane.showMessageDialog(
+                this,
+                "\"" + misilesTexto + "\" no es un número válido.\nIntroduce solo dígitos (ej: 10).",
+                "Error — Misiles no válidos",
+                JOptionPane.ERROR_MESSAGE
+            );
+            mostrarError("Solo se admiten números enteros.");
+            cajaMisiles.requestFocus();
+            cajaMisiles.selectAll();
+            return;
+        }
+
+        // 3. Número menor que 1
+        if (misiles < 1) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Debes lanzar al menos 1 misil.",
+                "Error — Cantidad inválida",
+                JOptionPane.WARNING_MESSAGE
+            );
+            mostrarError("El mínimo es 1 misil.");
+            return;
+        }
+
+        // 4. Más misiles de los disponibles
+        //    (parseamos los disponibles desde el label para no necesitar referencia externa)
+        int disponibles = parsearMisilesDisponibles();
+        if (disponibles >= 0 && misiles > disponibles) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Solo tienes " + disponibles + " misiles disponibles.",
+                "Error — Sin misiles suficientes",
+                JOptionPane.WARNING_MESSAGE
+            );
+            mostrarError("No tienes " + misiles + " misiles. Máximo: " + disponibles + ".");
+            return;
+        }
+
+        // Todo correcto → ocultamos el error y procesamos
+        ocultarError();
+        System.out.println("Has atacado a " + objetivoSeleccionado + " con " + misiles + " misiles");
+        // Aquí iría la llamada real a la lógica de combate cuando se integre
+    }
+
+    // ── Helpers privados ──────────────────────────────────────────────────────
+
+    /** Muestra el aviso rojo inline bajo la caja de misiles. */
+    private void mostrarError(String mensaje) {
+        lblError.setText("⚠ " + mensaje);
+        lblError.setVisible(true);
+        // Ponemos el borde de la caja en rojo para reforzar la señal visual
+        cajaMisiles.setBorder(BorderFactory.createLineBorder(new Color(255, 60, 60), 2));
+    }
+
+    /** Oculta el aviso de error y restaura el borde normal. */
+    private void ocultarError() {
+        lblError.setVisible(false);
+        cajaMisiles.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+    }
+
+    /**
+     * Extrae el número de misiles disponibles del texto del label.
+     * Devuelve -1 si no se puede leer (para no bloquear el juego).
+     */
+    private int parsearMisilesDisponibles() {
+        try {
+            String texto = lblMisilesDisponibles.getText(); // "Misiles en reserva: 42"
+            return Integer.parseInt(texto.replaceAll("[^0-9]", ""));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }
