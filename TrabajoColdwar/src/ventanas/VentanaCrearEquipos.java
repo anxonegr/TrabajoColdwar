@@ -105,11 +105,9 @@ public class VentanaCrearEquipos extends JPanel {
                 combosTipos[i].setVisible(false);
                 miniFotos[i].setVisible(false);
             }
-            
-            
         }
 
-        // ── Botones ──────────────────────────────────────────────────────────
+        // ── Botones Principales ───────────────────────────────────────────────
         btnAnadir = boton("recurso/añadirEquipo.png", 150, 500, 160, 45);
         btnJugar  = boton("recurso/jugar.png",        330, 500, 160, 45);
         btnInfo   = boton("recurso/Infopersonajes.png", 510, 500, 160, 45);
@@ -118,7 +116,7 @@ public class VentanaCrearEquipos extends JPanel {
         add(btnJugar);
         add(btnInfo);
 
-        // ── Acciones ─────────────────────────────────────────────────────────
+        // ── Acciones de los Botones ──────────────────────────────────────────
         btnAnadir.addActionListener(e -> {
             for (int i = 3; i < 6; i++) {
                 if (!etiqEquipos[i].isVisible()) {
@@ -140,14 +138,23 @@ public class VentanaCrearEquipos extends JPanel {
             JOptionPane.showMessageDialog(ventanaPadre, "Iniciando partida...")
         );
         
-     // ── Botón volver ─────────────────────────────────────────────────────────
-        JButton btnVolver = boton("recurso/flechaizq.png", 20, 520, 60, 50);
+        // ── Botón Volver ──────────────────────────────────────────────────────
+        // Nombre de la flecha actualizado a flechaizqroja.png
+        JButton btnVolver = boton("recurso/flechaizqroja.png", 20, 520, 60, 50);
         btnVolver.addActionListener(e -> {
             if (ventanaPadre instanceof mainFrame) {
                 ((mainFrame) ventanaPadre).mostrarMenuPrincipal();
             }
         });
         add(btnVolver);
+
+        // ── Botón Salir (NUEVO) ───────────────────────────────────────────────
+        // Colocado en la esquina inferior derecha para mantener la simetría
+        JButton btnSalir = boton("recurso/salir.png", 800, 520, 60, 50);
+        btnSalir.addActionListener(e -> {
+            System.exit(0); // Cierra el programa por completo
+        });
+        add(btnSalir);
     }
 
     // Pinta el fondo estirado a 900x600 directamente en este panel
@@ -231,11 +238,12 @@ public class VentanaCrearEquipos extends JPanel {
             textoInfo.setBounds(280, 50, 280, 250);
             fondo.add(textoInfo);
 
-            JButton btnIzq = boton("recurso/flechaizq.png", 70, 270, 70, 50);
+            // Nombres de las flechas actualizados
+            JButton btnIzq = boton("recurso/flechaizqroja.png", 70, 270, 70, 50);
             btnIzq.addActionListener(e -> { indiceActual = (indiceActual - 1 + 6) % 6; actualizarVista(); });
             fondo.add(btnIzq);
 
-            JButton btnDer = boton("recurso/flechader.png", 160, 270, 70, 50);
+            JButton btnDer = boton("recurso/flechadrcroja.png", 160, 270, 70, 50);
             btnDer.addActionListener(e -> { indiceActual = (indiceActual + 1) % 6; actualizarVista(); });
             fondo.add(btnDer);
 
@@ -287,3 +295,4 @@ public class VentanaCrearEquipos extends JPanel {
         }
     }
 }
+
